@@ -13,7 +13,7 @@ class Borg(object):
     '''
     Looks like the most powerfull implementation of the singleton pattern
     '''
-	__state = {}
-	def __init__(self):
-		self.__dict__ = self.__state
+    __state = {}
+    def __init__(self):
+        self.__dict__ = self.__state
         

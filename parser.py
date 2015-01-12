@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-
 import sys, os, re, io
 import imp, traceback
 
@@ -9,7 +7,36 @@ import weasyprint
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name 
 from pygments.formatters import HtmlFormatter
+
+from patterns import Borg
+
+class subject(Borg):
+    def __init__(self):
+        Borg.__init__(self)
+        if not hasattr(self, 'observers'):
+            setattr(self, 'observers', [])
         
+    def addObserver(self, obs):
+        self.observers.append(obs)
+        
+    def removeObserver(self, obs):
+        if obs in self.observers:
+            self.observers.remove(obs)
+        
+    def update(self, issuer=None, event='', message=''):
+        ''' slash based event description, message
+            ---------
+            parser
+                info
+                warning
+                error
+        '''
+        for obs in self.observers:
+            obs.update(issuer, event, message)
+
+def log(issuer=None, event='', message=''):
+    subject().update(issuer, event, message)
+
 linePatterns = (
     # Regex, flags, description
     # Markdutr elements
@@ -88,6 +115,7 @@ class mdElement:
         self.indentSize = 4
 
         self.acceptList = []
+        log(self, 'mino/parser/info', 'Created element [%s]'%name)
         
     def accept(self, elem):
         if self.opened:
@@ -569,12 +597,13 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
+    from cdtx.mino.observers import DumbObserver
+    
+    subject().addObserver(DumbObserver())
+    
     if len(sys.argv) > 1:
         if os.path.exists(sys.argv[1]):
             doc = load(sys.argv[1])
-            # print doc.display()
-            # doc.html('index.html')
-            # doc.pdf('output.pdf')
         else:
             usage()
     else:
