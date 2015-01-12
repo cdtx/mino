@@ -15,3 +15,8 @@ Output formats can be :
 
 - html (written or served)
 - pdf
+
+# Dependencies
+
+- weasyprint (for pdf output)
+- pygments (for source syntax coloring)
