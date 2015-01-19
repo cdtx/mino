@@ -53,10 +53,9 @@ class HtmlDocObserver:
     def mdTitle(self, issuer):
         before =    [   '<h%d>' % (issuer.indent()+1),
                         '    %s' % self.htmlReplaceInline(issuer.title),
+                        '</h%d>' % (issuer.indent()+1),
                     ]
-        
-        after =     [   '</h%d>' % (issuer.indent()+1),]
-        return (before, after)
+        return (before, [])
         
     def mdDocumentTitle(self, issuer):
         return (['<!-- <doc_title> -->'], ['<!-- </doc_title> -->'])
