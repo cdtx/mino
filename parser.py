@@ -4,9 +4,6 @@ import imp, traceback
 
 # from xhtml2pdf import pisa
 import weasyprint
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name 
-from pygments.formatters import HtmlFormatter
 
 from patterns import Borg
 
@@ -76,11 +73,8 @@ class ElementsFactory:
             return mdRootDoc()
         elif name == 'Empty line':
             return mdEmptyLine(name, *args)
-
         elif name == 'Document title':
             return mdDocumentTitle(name, *args)
-        elif name == 'Title':
-            return mdTitle(name, *args)
         elif name == 'Title':
             return mdTitle(name, *args)
         elif name == 'Text line':
@@ -165,25 +159,6 @@ class mdElement:
     def merge(self, elem):
         pass
     
-    def html(self, pad=0, linesBefore=[], linesAfter=[]):
-        str = '\n'.join([(' '*4*pad + x) for x in linesBefore]) + '\n'
-        for c in self.childs:
-            str += c.html(pad+1) + '\n'
-        str += '\n' + '\n'.join([(' '*4*pad + x) for x in linesAfter])
-        return str
-        
-    def htmlReplaceInline(self, content):
-        repl = {'bold':r'<strong>\1</strong>',
-                'italic':r'<em>\1</em>',
-                'underlined':r'<u>\1</u>',
-                'link':r'<a href="\1">\2</a>',
-        }
-                
-        for (pat, opt, type) in inlinePatterns:
-            if type in repl.keys():
-                content = re.sub(pat, repl[type], content, flags=opt)
-        return content
-    
     def getExtraParams(self):
         if self.extraParams:
             return ' '.join(['%s="%s"'%(k,d) for k,d in self.extraParams.all.iteritems()])
@@ -208,8 +183,7 @@ class mdElement:
 
 class mdRootDoc(mdElement):
     def __init__(self):
-        mdElement.__init__(self, '__root__')
-        self.style = 'default'        
+        mdElement.__init__(self, 'rootDoc')
         self.pending = {}
                 
     def indent(self):
@@ -228,37 +202,7 @@ class mdRootDoc(mdElement):
                 elem.extraParams = self.pending.get('Extra params')
                 self.pending.pop('Extra params', 0)
             return True
-        
-    def html(self, fileName=None, pad=0):
-        # with open('%s/styles/%s/style.css' % (os.path.dirname(os.path.realpath(__file__)), self.style), 'r') as style:
-        before =    [   '<!doctype html>',
-                        '<html>',
-                        '    <!-- Not supported yet -->',
-                        '    <head>',
-                        '        <link rel="stylesheet" href="styles/%s/style.css" />' % self.style,
-                        # '    <style>',
-                        # '     %s' % style.read(),
-                        # '    </style>',
-                        '    </head>',
-                        '    <body>',
-                        '        <article>',
-                        '            <header>',
-                        '                <div />',
-                        '            </header>',
-                    ]
-        after =     [   '        </article>',
-                        '    </body>',
-                        '</html>',
-                    ]
-        
-        html = mdElement.html(self, pad, before, after)
-        
-        if fileName:
-            with open(fileName, 'w') as file:
-                file.write(html)
-        
-        return html
-        
+       
     def pdf(self, fileName=None):
         before =    [   '<!doctype html>',
                         '<html>',
@@ -299,35 +243,21 @@ class mdEmptyLine(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
         
-    def html(self, pad=0):
-        return mdElement.html(self, pad, ['<br>'])
-
 class mdTitle(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
                
         self.title = inputs[1]
-                
-    def html(self, pad=0):
-        open = '<h%d>'%(self.indent()+1)
-        close = '</h%d>'%(self.indent()+1)
-    
-        return mdElement.html(self, pad, [open + self.htmlReplaceInline(self.title) + close])
 
 class mdDocumentTitle(mdTitle):
     def __init__(self, name, inputs):
         mdTitle.__init__(self, name, inputs)
-                
-    def html(self, pad=0):
-        return mdElement.html(self, pad, ['<!-- <doc_title> -->'], ['<!-- </doc_title> -->'])
 
 class mdTextLine(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
         self.opened = True
         self.acceptList = ['Text line', 'Empty line']
-        
-        self.htmlOpenClose = 'p'
         
         self.text = inputs[1].strip()
             
@@ -336,14 +266,6 @@ class mdTextLine(mdElement):
             self.text += '\n'+elem.inputs[1].strip()
         elif elem.name == 'Empty line':
             self.opened = False
-        
-    def html(self, pad=0):
-        before =    [   '<p>',
-                        '    %s' % self.htmlReplaceInline(self.text)
-                    ]
-        after =     ['</p>']
-    
-        return mdElement.html(self, pad, before, after)
         
     def display(self, pad=0):
         return '    '*pad + self.text + '\n'
@@ -366,16 +288,9 @@ class mdList(mdElement):
             self.childs.append(self.newItem(elem.inputs))
         elif elem.name == 'Empty line':
             self.opened = False
-
            
     def newItem(self, inputs):
         pass
-
-    def html(self, pad=0):
-        before =    [   '<' + self.htmlOpenClose + '>' ]
-        after =     ['</' + self.htmlOpenClose + '>']
-    
-        return mdElement.html(self, pad, before, after)
                 
     def display(self, pad=0):
         str = ''
@@ -384,13 +299,11 @@ class mdList(mdElement):
         return str
 
 class mdListItem(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, 'mdUnorderedListItem', inputs)
+    def __init__(self, name, inputs):
+        mdElement.__init__(self, name, inputs)
         self.opened = True
                
         self.text = inputs[1].strip()
-        
-        self.htmlOpenClose = 'li'
 
     def append(self, elem):
         if elem.name == 'Empty line':
@@ -398,46 +311,37 @@ class mdListItem(mdElement):
         else:
             mdElement.append(self, elem)
         
-    def html(self, pad=0):
-        before =    ['<li>',
-                     '    %s' % self.htmlReplaceInline(self.text)]
-        after =     ['</li>']
-    
-        return mdElement.html(self, pad, before, after)
-        
     def display(self, pad=0):
         return self.text + mdElement.display(self, pad)
         
 class mdOrderedList(mdList):
     def __init__(self, name, inputs):
-        mdList.__init__(self, name, inputs)
-        self.childItem = "Ordered list item"
-        
-        self.htmlOpenClose = 'ol'
-        
+        mdList.__init__(self, 'Ordered list', inputs)
+        self.childItem = 'Ordered list item'
+                
     def newItem(self, inputs):
         return mdOrderedListItem(inputs)
     
 class mdOrderedListItem(mdListItem):
-    pass
+    def __init__(self, inputs):
+        mdListItem.__init__(self, 'Unordered list item', inputs)
         
 class mdUnorderedList(mdList):
     def __init__(self, name, inputs):
-        mdList.__init__(self, name, inputs)
-        self.childItem = "Unordered list item"
-        
-        self.htmlOpenClose = 'ul'
+        mdList.__init__(self, 'Unordered list', inputs)
+        self.childItem = 'Unordered list item'
         
     def newItem(self, inputs):
         return mdUnorderedListItem(inputs)
     
 class mdUnorderedListItem(mdListItem):
-    pass
+    def __init__(self, inputs):
+        mdListItem.__init__(self, 'Ordered list item', inputs)
 
     
 class mdTable(mdElement):
     def __init__(self, name, inputs):
-        mdElement.__init__(self, name, inputs)
+        mdElement.__init__(self, 'Table', inputs)
         self.opened = True
 
         self.childs = [mdTableLine(inputs)]
@@ -449,14 +353,11 @@ class mdTable(mdElement):
         return mdElement.append(self, elem)
             
     def merge(self, elem):
-        if elem.name == 'Table line':
+        if elem.name == 'Table':
             self.childs.append(mdTableLine(elem.inputs))
         elif elem.name == 'Empty line':
             self.opened = False
-            
-    def html(self, pad=0):
-        return mdElement.html(self, pad, ['<table %s>' % self.getExtraParams()], ['</table>'])
-
+    
     def display(self, pad=0):
         str = ''
         for x in self.childs:
@@ -465,7 +366,7 @@ class mdTable(mdElement):
 
 class mdTableLine(mdElement):
     def __init__(self, inputs):
-        mdElement.__init__(self, 'mdTableLine', inputs)
+        mdElement.__init__(self, 'Table line', inputs)
         self.opened = True
                
         self.elements = inputs[1].strip().split('|')[1:-1]
@@ -478,13 +379,6 @@ class mdTableLine(mdElement):
         
     def display(self, pad=0):
         return ' | '.join(self.elements)
-        
-    def html(self, pad=0):
-        before =    ['<tr>']
-        for c in self.elements:
-            before.append('    <td> %s </td>' % self.htmlReplaceInline(c.strip()))
-        after =     ['</tr>']
-        return mdElement.html(self, pad, before, after)
     
 class mdBlocOfCode(mdElement):
     def __init__(self, name, inputs):
@@ -493,12 +387,7 @@ class mdBlocOfCode(mdElement):
         
         self.lang = inputs[1].strip()
         self.text = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs[2].split('\n'))
-                
-    def html(self, pad=0):
-        # See for using http://prismjs.com/index.html
-        return highlight(self.text, get_lexer_by_name(self.lang), HtmlFormatter(noclasses=True))
-        # return ' '*4*pad + '<p class="%s">'%self.lang + self.text.replace('\n', '<br/>') + '</p>'
-        
+
     def display(self, pad=0):
         return self.text + '\n'
 
@@ -519,6 +408,7 @@ class mdPlugin(mdElement):
         self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
     
     def run(self):
+        self.output.truncate(0)
         output = self.output
         if self.pluginName.lower() == 'python':
             exec(self.content, locals(), globals())
@@ -528,24 +418,7 @@ class mdPlugin(mdElement):
     def display(self, pad=0):
         self.output.truncate(0)
         self.run()
-        return 'Plugin execution...'
-        
-    def html(self, pad=0):
-        self.output.truncate(0)
-        try:
-            self.run()
-            return mdElement.html(self, pad, [  '<p>', 
-                                                self.output.getvalue().replace('\n', '<br/>'),
-                                                '</p>'
-                                             ])
-            
-        except:
-            print traceback.print_exc()
-            return mdElement.html(self, pad, [  '<warning>', 
-                                                '    Plugin execution have failed', 
-                                                '</warning>'
-                                             ])
-        
+        return 'Plugin execution...'        
 
 class mdLink(mdElement):
     def __init__(self, name, inputs):
@@ -555,28 +428,12 @@ class mdLink(mdElement):
         self.url = self.inputs[1]
         self.caption = self.inputs[2]
         
-    def html(self, pad=0):
-        before =    [   '<p>',  
-                        '    <a href="%s">%s</a>' % (self.url, self.htmlReplaceInline(self.caption)),
-                        '</p>'
-                    ]
-        return mdElement.html(self, pad, before)
-        
     def display(self, pad=0):
         return '    '*pad + 'link : ' + self.url + '\n'
 
 class mdImage(mdLink):
     def __init__(self, name, inputs):
         mdLink.__init__(self, name, inputs)
-    
-    def html(self, pad=0):
-        before =    [   '<figure>', 
-                        '   <img src="%s" alt="missing" %s/>' % (self.url, self.getExtraParams()),
-                        '   <figcaption>%s</figcaption>' % self.htmlReplaceInline(self.caption),
-                        '</figure>'
-                    ]
-        return mdElement.html(self, pad, before)
-
         
     def display(self, pad=0):
         return '    '*pad + 'Image : ' + self.url + '\n'
@@ -603,9 +460,10 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
-    from cdtx.mino.observers import DumbObserver
+    from cdtx.mino.observers import DumbObserver, HtmlDocObserver
     
-    subject().addObserver(DumbObserver())
+    # subject().addObserver(DumbObserver())
+    # subject().addObserver(HtmlDocObserver())
     
     if len(sys.argv) > 1:
         if os.path.exists(sys.argv[1]):
