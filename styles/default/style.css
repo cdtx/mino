@@ -2,7 +2,6 @@ body {
     margin-left: 5%;
     margin-right: 5%;
     font-family: "Courier New", Courier, monospace;
-    counter-reset: h1;
 }
 
 strong, b {
@@ -18,7 +17,8 @@ header div{
 
 h1:before {
     counter-increment: h1;
-    content: counter(h1) ". "
+    content: counter(h1) ". ";
+    counter-reset: h2;
 }
 h1 {
     color: darkcyan;
@@ -26,10 +26,44 @@ h1 {
     counter-reset: h2;
 }
 
+
 h2:before {
-    counter-increment: h2; 
-    content: counter(h1) "." counter(h2) " "
+    content: counter(h2) ". ";
 }
+h2 {
+    margin-left: 2%;
+    counter-increment: h2;
+    counter-reset: h3;
+}
+
+
+h3:before {
+    content: counter(h2) "." counter(h3) " ";
+}
+h3 {
+    margin-left: 4%;
+    counter-increment:h3;
+    counter-reset: h4;
+}
+
+h4:before {
+    content: counter(h2) "." counter(h3) "." counter(h4) " "
+}
+h4 {
+    margin-left: 6%;
+    counter-increment: h4;
+    counter-reset: h5;
+}
+
+h5:before {
+    counter-increment: h5;
+    content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) " "
+}
+h5 {
+    margin-left: 8%;
+    counter-increment: h5;
+}
+                        
 
 h2, h3, h4, h5, h6{
     color: darkcyan;
@@ -40,24 +74,32 @@ p {
     text-align: justify;
     margin-left: 2%;
     margin-right: 2%;
+    color: black
 }
-ul{
-    margin-left: 1em;
+
+
+ul {
+    position: relative;
+    list-style-type: disc
 }
-ol{
-    margin-left: 5%;
+ol {
+    position: relative;
 }
+
 
 
 table{
     margin: 5%;
     border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
 }
 table td{
     border-style: solid;
     border-width: 1px;
     padding: 0.5em;
 }
+
 
 img {
     margin: 0px auto;
