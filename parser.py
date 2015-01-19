@@ -3,7 +3,6 @@ import sys, os, re, io
 import imp, traceback
 
 # from xhtml2pdf import pisa
-import weasyprint
 
 from patterns import Borg
 
@@ -30,8 +29,6 @@ class subject(Borg):
                     error
                 doc
                     start
-                    nodeOpen
-                    nodeClose
                     stop
         '''
         for obs in self.observers:
@@ -172,10 +169,10 @@ class mdElement:
             return ''
     
     def doc(self):
-        log(self, 'mino/doc/nodeOpen')
+        log(self, 'mino/doc/start')
         for x in self.childs:
             x.doc()
-        log(self, 'mino/doc/nodeClose')
+        log(self, 'mino/doc/stop')
     
     def display(self, pad=0):
         str = ''
@@ -208,38 +205,6 @@ class mdRootDoc(mdElement):
                 elem.extraParams = self.pending.get('Extra params')
                 self.pending.pop('Extra params', 0)
             return True
-       
-    def doc(self):
-        log(self, 'mino/doc/start')
-        mdElement.doc(self)
-        log(self, 'mino/doc/stop')
-       
-    def pdf(self, fileName=None):
-        before =    [   '<!doctype html>',
-                        '<html>',
-                        '    <!-- Not supported yet -->',
-                        '    <head>',
-                        '        <link rel="stylesheet" href="styles/%s/pdf.css" />' % self.style,
-                        '    </head>',
-                        '    <body>',
-                        '        <article>',
-                        '            <header>',
-                        '                <div />',
-                        '            </header>',
-                    ]
-        after =     [   '        </article>',
-                        '    </body>',
-                        '</html>',
-                    ]
-        
-        html = mdElement.html(self, 0, before, after)
-        
-        if fileName:
-            weasyprint.HTML(string=html, base_url=os.path.abspath(__file__)).write_pdf(target=fileName)
-        return html
-        
-        
-        
 
 class mdExtraParams(mdElement):
     def __init__(self, name, inputs):
@@ -471,14 +436,18 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
-    from cdtx.mino.observers import DumbObserver, HtmlDocObserver
+    from cdtx.mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
     
-    # subject().addObserver(DumbObserver())
-    subject().addObserver(HtmlDocObserver('index.html'))
+    subject().addObserver(DumbObserver())
+    # html = HtmlDocObserver()
+    # pdf = PdfDocObserver()
+    # subject().addObserver(html)
+    # subject().addObserver(pdf)
     
     if len(sys.argv) > 1:
         if os.path.exists(sys.argv[1]):
             doc = load(sys.argv[1])
+            # Run a doc loop
             doc.doc()
         else:
             usage()

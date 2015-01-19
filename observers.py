@@ -1,20 +1,28 @@
+import os, re
+
+from cdtx.mino.parser import inlinePatterns
+
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name 
 from pygments.formatters import HtmlFormatter
-
-from cdtx.mino.parser import inlinePatterns
-import re
+import weasyprint
 
 class DumbObserver:
     def update(self, issuer, event, message):
         print issuer, event, message
         
 class HtmlDocObserver:
-    def __init__(self, fileName=None):
-        self.fileName = fileName
-        self.file = None
+    def __init__(self):
         self.indent = 0
         self.style = 'default'
+        self.str = ''
+        
+    def __str__(self):
+        return self.str
+    
+    def toFile(self, fileName):
+        with open(fileName, 'w') as f:
+            f.write(self.str)
 
     def mdRootDoc(self, issuer):
         # with open('%s/styles/%s/style.css' % (os.path.dirname(os.path.realpath(__file__)), self.style), 'r') as style:
@@ -158,29 +166,14 @@ class HtmlDocObserver:
     
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            if self.fileName:
-                self.file = open(self.fileName, 'w')
-        elif event == 'mino/doc/stop':
-            if self.file:
-                self.file.close()
-            
-        if event == 'mino/doc/nodeOpen':
             linesBefore = self.functionFactory(issuer.name)(issuer)[0]
-            str = '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
+            self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
             self.indent += 1
-            if self.file:
-                self.file.write(str)
-            else:
-                print str
-        elif event == 'mino/doc/nodeClose':
+        elif event == 'mino/doc/stop':
             self.indent -= 1
             linesAfter = self.functionFactory(issuer.name)(issuer)[1]
-            str = '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
-            if self.file:
-                self.file.write(str)
-            else:
-                print str
-            
+            self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
+
     def htmlReplaceInline(self, content):
         repl = {'bold':r'<strong>\1</strong>',
                 'italic':r'<em>\1</em>',
@@ -194,4 +187,32 @@ class HtmlDocObserver:
         return content
             
             
-            
+class PdfDocObserver(HtmlDocObserver):
+    '''
+    Using weasyprint, pdf generation becomes a special case of html generation
+    Except the header that changes
+    '''
+    def mdRootDoc(self, issuer):
+        before =    [   '<!doctype html>',
+                        '<html>',
+                        '    <!-- Not supported yet -->',
+                        '    <head>',
+                        '        <link rel="stylesheet" href="styles/%s/pdf.css" />' % self.style,
+                        '    </head>',
+                        '    <body>',
+                        '        <article>',
+                        '            <header>',
+                        '                <div />',
+                        '            </header>',
+                    ]
+        after =     [   '        </article>',
+                        '    </body>',
+                        '</html>',
+                    ]
+        
+        return (before, after)
+
+    def toFile(self, fileName):
+        weasyprint.HTML(string=self.str, base_url=os.path.abspath(__file__)).write_pdf(target=fileName)
+    
+    
