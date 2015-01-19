@@ -73,10 +73,10 @@ MINO documentation
         ```
         
     # Link
-        !(Fork me on GitHub)(https://github.com/cdtx/mino)
+        !(https://github.com/cdtx/mino)(Fork me on GitHub)
     
     # Image
-        !(Tux)(http://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/200px-Tux.svg.png)
+        !!(http://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/200px-Tux.svg.png)(Tux)
         
         
     
