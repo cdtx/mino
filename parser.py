@@ -190,6 +190,12 @@ class mdElement:
         else:
             return ''
     
+    def doc(self):
+        log(self, 'mino/doc/start')
+        for x in self.childs:
+            x.doc()
+        log(self, 'mino/doc/stop')
+    
     def display(self, pad=0):
         str = ''
         str += '    '*pad + self.name
@@ -301,7 +307,7 @@ class mdTitle(mdElement):
         mdElement.__init__(self, name, inputs)
                
         self.title = inputs[1]
-        
+                
     def html(self, pad=0):
         open = '<h%d>'%(self.indent()+1)
         close = '</h%d>'%(self.indent()+1)
@@ -604,6 +610,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         if os.path.exists(sys.argv[1]):
             doc = load(sys.argv[1])
+            doc.doc()
         else:
             usage()
     else:
