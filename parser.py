@@ -23,10 +23,16 @@ class subject(Borg):
     def update(self, issuer=None, event='', message=''):
         ''' slash based event description, message
             ---------
-            parser
-                info
-                warning
-                error
+            mino
+                parser
+                    info
+                    warning
+                    error
+                doc
+                    start
+                    nodeOpen
+                    nodeClose
+                    stop
         '''
         for obs in self.observers:
             obs.update(issuer, event, message)
@@ -166,10 +172,10 @@ class mdElement:
             return ''
     
     def doc(self):
-        log(self, 'mino/doc/start')
+        log(self, 'mino/doc/nodeOpen')
         for x in self.childs:
             x.doc()
-        log(self, 'mino/doc/stop')
+        log(self, 'mino/doc/nodeClose')
     
     def display(self, pad=0):
         str = ''
@@ -202,6 +208,11 @@ class mdRootDoc(mdElement):
                 elem.extraParams = self.pending.get('Extra params')
                 self.pending.pop('Extra params', 0)
             return True
+       
+    def doc(self):
+        log(self, 'mino/doc/start')
+        mdElement.doc(self)
+        log(self, 'mino/doc/stop')
        
     def pdf(self, fileName=None):
         before =    [   '<!doctype html>',
@@ -463,7 +474,7 @@ if __name__ == '__main__':
     from cdtx.mino.observers import DumbObserver, HtmlDocObserver
     
     # subject().addObserver(DumbObserver())
-    # subject().addObserver(HtmlDocObserver())
+    subject().addObserver(HtmlDocObserver('index.html'))
     
     if len(sys.argv) > 1:
         if os.path.exists(sys.argv[1]):

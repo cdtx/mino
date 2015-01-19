@@ -54,6 +54,15 @@ MINO documentation
             grep -E "main\(.*\)" --include="*.c" .
         ```
         
+        cpp
+        ``` cpp
+            #include <stdio.h>
+            
+            int main(int argc, char **argv) {
+                printf("Hello world");
+            }
+        ```
+        
         Python
         ``` python
             def f():

@@ -11,6 +11,8 @@ class DumbObserver:
         
 class HtmlDocObserver:
     def __init__(self, fileName=None):
+        self.fileName = fileName
+        self.file = None
         self.indent = 0
         self.style = 'default'
 
@@ -156,15 +158,28 @@ class HtmlDocObserver:
     
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            linesBefore = self.functionFactory(issuer.name)(issuer)[0]
-            str = '\n'.join([(' '*4*self.indent + x) for x in linesBefore])
-            self.indent += 1
-            print str
+            if self.fileName:
+                self.file = open(self.fileName, 'w')
         elif event == 'mino/doc/stop':
+            if self.file:
+                self.file.close()
+            
+        if event == 'mino/doc/nodeOpen':
+            linesBefore = self.functionFactory(issuer.name)(issuer)[0]
+            str = '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
+            self.indent += 1
+            if self.file:
+                self.file.write(str)
+            else:
+                print str
+        elif event == 'mino/doc/nodeClose':
             self.indent -= 1
             linesAfter = self.functionFactory(issuer.name)(issuer)[1]
-            str = '\n'.join([(' '*4*self.indent + x) for x in linesAfter])
-            print str
+            str = '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
+            if self.file:
+                self.file.write(str)
+            else:
+                print str
             
     def htmlReplaceInline(self, content):
         repl = {'bold':r'<strong>\1</strong>',
