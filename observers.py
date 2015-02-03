@@ -1,6 +1,6 @@
 import os, re
 
-from cdtx.mino.parser import inlinePatterns
+from mino.parser import inlinePatterns
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name 

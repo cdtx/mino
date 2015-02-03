@@ -436,7 +436,7 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
-    from cdtx.mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
+    from mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
     
     subject().addObserver(DumbObserver())
     html = HtmlDocObserver()
@@ -450,7 +450,7 @@ if __name__ == '__main__':
             # Run a doc loop
             doc.doc()
             html.toFile('index.html')
-            pdf.toFile('README.pdf')
+            pdf.toFile('out.pdf')
         else:
             usage()
     else:
