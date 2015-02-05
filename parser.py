@@ -162,12 +162,6 @@ class mdElement:
     def merge(self, elem):
         pass
     
-    def getExtraParams(self):
-        if self.extraParams:
-            return ' '.join(['%s="%s"'%(k,d) for k,d in self.extraParams.all.iteritems()])
-        else:
-            return ''
-    
     def doc(self):
         log(self, 'mino/doc/start')
         for x in self.childs:
