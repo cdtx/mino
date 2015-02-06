@@ -51,7 +51,7 @@ class HtmlDocObserver:
         return self.html(['<br>'])
         
     def mdTitle(self, issuer):
-        before =    [   '<h%d>' % (issuer.indent()+1),
+        before =    [   '<h%d %s>' % (issuer.indent()+1, self.extraParams(issuer)),
                         '    %s' % self.htmlReplaceInline(issuer.title),
                         '</h%d>' % (issuer.indent()+1),
                     ]
@@ -61,39 +61,39 @@ class HtmlDocObserver:
         return (['<!-- <doc_title> -->'], ['<!-- </doc_title> -->'])
         
     def mdTextLine(self, issuer):
-        before =    [   '<p>',
-                        '    %s' % self.htmlReplaceInline(issuer.text)
+        before =    [   '<p %s>' % self.extraParams(issuer),
+                        '    %s' % (self.htmlReplaceInline(issuer.text))
                     ]
         after =     ['</p>']
         return (before, after)
     
     def mdListItem(self, issuer):
-        before =    ['<li>',
-                     '    %s' % self.htmlReplaceInline(issuer.text)]
+        before =    ['<li %s>' % self.extraParams(issuer),
+                     '    %s' % (self.htmlReplaceInline(issuer.text))]
         after =     ['</li>']
         return (before, after)
         
     def mdOrderedList(self, issuer):
-        before =    ['<ol>' ]
+        before =    ['<ol %s>' % self.extraParams(issuer)]
         after =     ['</ol>']
         return (before, after)
     def mdOrderedListItem(self, issuer):
         return self.mdListItem(issuer)
         
     def mdUnorderedList(self, issuer):
-        before =    ['<ul>' ]
+        before =    ['<ul %s>' % self.extraParams(issuer) ]
         after =     ['</ul>']
         return (before, after)        
     def mdUnorderedListItem(self, issuer):
         return self.mdListItem(issuer)
         
     def mdTable(self, issuer):
-        before =    ['<table %s>' % issuer.getExtraParams()]
+        before =    ['<table %s>' % self.extraParams(issuer)]
         after =     ['</table>']
         return (before, after)
     
     def mdTableLine(self, issuer):
-        before =    ['<tr>']
+        before =    ['<tr %s>' % self.extraParams(issuer)]
         for c in issuer.elements:
             before.append('    <td> %s </td>' % self.htmlReplaceInline(c.strip()))
         after =     ['</tr>']
@@ -104,14 +104,14 @@ class HtmlDocObserver:
         return ([highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True))], [])
     
     def mdPlugin(self, issuer):
-        before =    [   '<p>',
+        before =    [   '<p %s>' % self.extraParams(issuer),
                         issuer.output.getvalue().replace('\n', '<br/>'),
                     ]
         after =    ['</p>']
         return (before, after)
     
     def mdLink(self, issuer):
-        before =    [   '<p>',  
+        before =    [   '<p %s>' % (self.extraParams(issuer)),  
                         '    <a href="%s">%s</a>' % (issuer.url, self.htmlReplaceInline(issuer.caption)),
                     ]
         after =     [   '</p>']
@@ -119,13 +119,18 @@ class HtmlDocObserver:
     
     def mdImage(self, issuer):
         before =    [   '<figure>', 
-                        '   <img src="%s" alt="missing" %s/>' % (issuer.url, issuer.getExtraParams()),
+                        '   <img src="%s" alt="missing" %s/>' % (issuer.url, self.extraParams(issuer)),
                         '   <figcaption>%s</figcaption>' % self.htmlReplaceInline(issuer.caption),
                     ]
         after =     [   '</figure>' ]
         return (before, after)
-
     
+    def extraParams(self, issuer):
+        if issuer.extraParams == None:
+            return ''
+        return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.extraParams.all.iteritems()])
+             
+
     def functionFactory(self, name):
         if name == 'rootDoc':
             return self.mdRootDoc
