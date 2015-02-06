@@ -42,7 +42,7 @@ linePatterns = (
     # Markdutr elements
     (r'([\t ]*)\[(.*?)\]\r?\n', re.IGNORECASE, 'Extra params'),
     (r'()(.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
-    (r'([\t ]*)#(.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Title'),
+    (r'([\t ]*)#(=P<title>.*?)(=P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Title'),
     (r'([\t ]*)-(?!-)(.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
     (r'([\t ]*)\d+\.(.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
     (r'([\t ]*)(\|.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Table line'),
@@ -162,12 +162,6 @@ class mdElement:
     def merge(self, elem):
         pass
     
-    def getExtraParams(self):
-        if self.extraParams:
-            return ' '.join(['%s="%s"'%(k,d) for k,d in self.extraParams.all.iteritems()])
-        else:
-            return ''
-    
     def doc(self):
         log(self, 'mino/doc/start')
         for x in self.childs:
@@ -224,6 +218,7 @@ class mdTitle(mdElement):
         mdElement.__init__(self, name, inputs)
                
         self.title = inputs[1]
+        print 'Title', inputs
 
 class mdDocumentTitle(mdTitle):
     def __init__(self, name, inputs):
