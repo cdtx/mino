@@ -40,23 +40,23 @@ def log(issuer=None, event='', message=''):
 linePatterns = (
     # Regex, flags, description
     # Markdutr elements
-    (r'([\t ]*)\[(.*?)\]\r?\n', re.IGNORECASE, 'Extra params'),
-    (r'()(.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
-    (r'([\t ]*)#(=P<title>.*?)(=P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Title'),
-    (r'([\t ]*)-(?!-)(.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
-    (r'([\t ]*)\d+\.(.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
-    (r'([\t ]*)(\|.*?)(\[.*?\])?\r?\n', re.IGNORECASE, 'Table line'),
-    (r'([\t ]*)```[\t ]*(.*?)\r?\n(.*?)```[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Bloc of code'),
-    (r'([\t ]*)!\((.*?)\)\((.*?)\)[\t ]*(\[.*?\])?\r?\n', re.IGNORECASE, 'Link'),
-    (r'([\t ]*)!!\((.*?)\)\((.*?)\)[\t ]*(\[.*?\])?\r?\n', re.IGNORECASE, 'Image'),
-    (r'([\t ]*)!#\((.*?)\)[\t ]*(\[.*?\])?\r?\n', re.IGNORECASE, 'Include'),
+    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE, 'Extra params'),
+    (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
+    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Title'),
+    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
+    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)?P<extra>(\[.*?\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
+    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Table line'),
+    (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Bloc of code'),
+    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Link'),
+    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Image'),
+    (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Include'),
     
     # Plugin
-    (r'([\t ]*)_\{(\w+)[\t ]*(\r?\n?.*?)\}_[\t ]*(\[.*?\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Plugin'),
+    (r'(?P<indent>[\t ]*)_\{(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(?P<extra>\[.*?\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Plugin'),
     
     # Decorative lines
-    (r'([\t ]*)(\S.*)\r?\n', re.IGNORECASE, 'Text line'),
-    (r'()([\t ]*)\r?\n?', re.IGNORECASE, 'Empty line'),
+    (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?\n', re.IGNORECASE, 'Text line'),
+    (r'(?P<indent>)([\t ]*)\r?\n?', re.IGNORECASE, 'Empty line'),
 )
     
 inlinePatterns = (
@@ -155,9 +155,9 @@ class mdElement:
             
                         
     def indent(self):
-        if self.inputs == []:
+        if self.inputs == {}:
             return 0
-        return len(self.inputs[0]) / self.indentSize
+        return len(self.inputs['indent']) / self.indentSize
     
     def merge(self, elem):
         pass
@@ -204,7 +204,7 @@ class mdExtraParams(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
         self.all = {}
-        for x in inputs[1].split(','):
+        for x in inputs['content'].split(','):
             m = re.match(r'(.+?)=(.*)', x.strip())
             if m:
                 self.all[m.groups()[0].strip()] = m.groups()[1].strip()
@@ -217,8 +217,7 @@ class mdTitle(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
                
-        self.title = inputs[1]
-        print 'Title', inputs
+        self.title = inputs['content']
 
 class mdDocumentTitle(mdTitle):
     def __init__(self, name, inputs):
@@ -230,11 +229,11 @@ class mdTextLine(mdElement):
         self.opened = True
         self.acceptList = ['Text line', 'Empty line']
         
-        self.text = inputs[1].strip()
+        self.text = inputs['content'].strip()
             
     def merge(self, elem):
         if elem.name == 'Text line':
-            self.text += '\n'+elem.inputs[1].strip()
+            self.text += '\n'+elem.inputs['content'].strip()
         elif elem.name == 'Empty line':
             self.opened = False
         
@@ -274,7 +273,7 @@ class mdListItem(mdElement):
         mdElement.__init__(self, name, inputs)
         self.opened = True
                
-        self.text = inputs[1].strip()
+        self.text = inputs['content'].strip()
 
     def append(self, elem):
         if elem.name == 'Empty line':
@@ -295,7 +294,7 @@ class mdOrderedList(mdList):
     
 class mdOrderedListItem(mdListItem):
     def __init__(self, inputs):
-        mdListItem.__init__(self, 'Unordered list item', inputs)
+        mdListItem.__init__(self, 'Ordered list item', inputs)
         
 class mdUnorderedList(mdList):
     def __init__(self, name, inputs):
@@ -307,7 +306,7 @@ class mdUnorderedList(mdList):
     
 class mdUnorderedListItem(mdListItem):
     def __init__(self, inputs):
-        mdListItem.__init__(self, 'Ordered list item', inputs)
+        mdListItem.__init__(self, 'Unordered list item', inputs)
 
     
 class mdTable(mdElement):
@@ -340,7 +339,7 @@ class mdTableLine(mdElement):
         mdElement.__init__(self, 'Table line', inputs)
         self.opened = True
                
-        self.elements = inputs[1].strip().split('|')[1:-1]
+        self.elements = inputs['content'].strip().split('|')[1:-1]
 
     def append(self, elem):
         if elem.name == 'Empty line':
@@ -356,8 +355,8 @@ class mdBlocOfCode(mdElement):
         mdElement.__init__(self, name, inputs)
         self.opened = False
         
-        self.lang = inputs[1].strip()
-        self.text = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs[2].split('\n'))
+        self.lang = inputs['lang'].strip()
+        self.text = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs['content'].split('\n'))
 
     def display(self, pad=0):
         return self.text + '\n'
@@ -368,13 +367,13 @@ class mdPlugin(mdElement):
         mdElement.__init__(self, name, inputs)
         self.opened = False
         
-        self.pluginName = inputs[1]
+        self.pluginName = inputs['name']
         
         # Plugin content can be on the same line that the open , or several lines just under the open with indentation
-        if self.inputs[2].startswith('\r') or self.inputs[2].startswith('\n'):
-            self.content = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs[2].split('\n'))
+        if self.inputs['content'].startswith('\r') or self.inputs['content'].startswith('\n'):
+            self.content = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs['content'].split('\n'))
         else:
-            self.content = self.inputs[2]
+            self.content = self.inputs['content']
 
         self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
     
@@ -396,8 +395,8 @@ class mdLink(mdElement):
         mdElement.__init__(self, name, inputs)
         self.opened = False
             
-        self.url = self.inputs[1]
-        self.caption = self.inputs[2]
+        self.url = self.inputs['url']
+        self.caption = self.inputs['caption']
         
     def display(self, pad=0):
         return '    '*pad + 'link : ' + self.url + '\n'
@@ -418,8 +417,7 @@ def load(fileName):
             for (pat, opt, type) in linePatterns:
                 res = re.match(pat, content, flags=opt)
                 if res:
-                    # print 'Found [%s] -> ' % type, res.groups()
-                    doc.append(ElementsFactory().get(type, res.groups()))
+                    doc.append(ElementsFactory().get(type, res.groupdict()))
                     break
             if (not res) or (len(res.group()) == 0):
                 raise Exception('Parser is stuck :\n' + content)
