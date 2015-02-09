@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pdb
 import sys, os, re, io
 import imp, traceback
 
@@ -44,7 +45,7 @@ linePatterns = (
     (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
     (r'(?P<indent>[\t ]*)#(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Title'),
     (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
-    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)?P<extra>(\[.*?\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
+    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
     (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Table line'),
     (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Bloc of code'),
     (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Link'),
@@ -144,6 +145,7 @@ class mdElement:
             if elem.indent() > self.indent():
                 # Elem destination is just after this node
                 if elem.indent() == self.indent() + 1:
+                    # If there are already childs and the last one absorb this last element
                     if self.childs != [] and self.childs[-1].accept(elem):
                         # Merge the nodes
                         self.childs[-1].merge(elem)
@@ -151,6 +153,7 @@ class mdElement:
                         # Create the node a brother
                         self.childs.append(elem)
                 else:
+                    # append elem at a level under 
                     self.childs[-1].append(elem)
             
                         
@@ -167,16 +170,6 @@ class mdElement:
         for x in self.childs:
             x.doc()
         log(self, 'mino/doc/stop')
-    
-    def display(self, pad=0):
-        str = ''
-        str += '    '*pad + self.name
-        if self.id:
-            str += ' - %s' % self.id
-        str += '\n'
-        for x in self.childs:
-            str += x.display(pad+1)
-        return str
 
 class mdRootDoc(mdElement):
     def __init__(self):
@@ -237,36 +230,27 @@ class mdTextLine(mdElement):
         elif elem.name == 'Empty line':
             self.opened = False
         
-    def display(self, pad=0):
-        return '    '*pad + self.text + '\n'
-        
 class mdList(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
         self.opened = True
 
-        self.childs = [mdUnorderedListItem(inputs)]
+        self.childs = [self.newItem(inputs)]
            
     def accept(self, elem):
-        return self.childs[-1].accept(elem)
+        return (elem.name == self.name) or (self.childs[-1].accept(elem))
         
     def append(self, elem):
         return self.childs[-1].append(elem)
         
     def merge(self, elem):
-        if elem.name == self.childItem:
-            self.childs.append(self.newItem(elem.inputs))
-        elif elem.name == 'Empty line':
+        if elem.name == 'Empty line':
             self.opened = False
+        else:
+            self.childs.append(self.newItem(elem.inputs))
            
     def newItem(self, inputs):
         pass
-                
-    def display(self, pad=0):
-        str = ''
-        for x in self.childs:
-            str += ' '*4*pad + x.display(pad+1) + '\n'
-        return str
 
 class mdListItem(mdElement):
     def __init__(self, name, inputs):
@@ -280,9 +264,6 @@ class mdListItem(mdElement):
             self.opened = False
         else:
             mdElement.append(self, elem)
-        
-    def display(self, pad=0):
-        return self.text + mdElement.display(self, pad)
         
 class mdOrderedList(mdList):
     def __init__(self, name, inputs):
