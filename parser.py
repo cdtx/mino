@@ -100,7 +100,7 @@ class ElementsFactory:
             return mdElement('mdElement', *args)
 
 class mdElement:
-    def __init__(self, name, inputs=[]):
+    def __init__(self, name, inputs={}):
         self.id = None
         self.name = name
         self.inputs = inputs
@@ -108,6 +108,8 @@ class mdElement:
         self.childs = []
         
         self.extraParams = None
+        if inputs.get('extra'):
+            self.extraParams = ElementsFactory().get('Extra params', {'content': inputs['extra']})
         
         self.indentSize = 4
 
