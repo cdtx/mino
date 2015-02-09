@@ -42,17 +42,17 @@ linePatterns = (
     # Markdutr elements
     (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE, 'Extra params'),
     (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
-    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Title'),
-    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
-    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
-    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Table line'),
+    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Title'),
+    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
+    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Ordered list item'),
+    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Table line'),
     (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Bloc of code'),
-    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Link'),
-    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Image'),
-    (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(?P<extra>\[.*?\])?\r?\n', re.IGNORECASE, 'Include'),
+    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Link'),
+    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Image'),
+    (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Include'),
     
     # Plugin
-    (r'(?P<indent>[\t ]*)_\{(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(?P<extra>\[.*?\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Plugin'),
+    (r'(?P<indent>[\t ]*)_\{(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Plugin'),
     
     # Decorative lines
     (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?\n', re.IGNORECASE, 'Text line'),
@@ -108,6 +108,7 @@ class mdElement:
         self.childs = []
         
         self.extraParams = None
+        # If extraParam have been found on the same line, process it now
         if inputs.get('extra'):
             self.extraParams = ElementsFactory().get('Extra params', {'content': inputs['extra']})
         
