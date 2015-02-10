@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pdb
 import sys, os, re, io
 import imp, traceback
 
@@ -40,7 +41,7 @@ def log(issuer=None, event='', message=''):
 linePatterns = (
     # Regex, flags, description
     # Markdutr elements
-    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE, 'Extra params'),
+    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE | re.DOTALL, 'Extra params'),
     (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
     (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Title'),
     (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Unordered list item'),
@@ -203,7 +204,7 @@ class mdExtraParams(mdElement):
     def __init__(self, name, inputs):
         mdElement.__init__(self, name, inputs)
         self.all = {}
-        for x in inputs['content'].split(','):
+        for x in inputs['content'].replace('\n', ' ').split(','):
             m = re.match(r'(.+?)=(.*)', x.strip())
             if m:
                 self.all[m.groups()[0].strip()] = m.groups()[1].strip()
@@ -229,7 +230,7 @@ class mdTextLine(mdElement):
         self.acceptList = ['Text line', 'Empty line']
         
         self.text = inputs['content'].strip()
-            
+
     def merge(self, elem):
         if elem.name == 'Text line':
             self.text += '\n'+elem.inputs['content'].strip()

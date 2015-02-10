@@ -1,7 +1,9 @@
 MINO documentation
 ==================
 
-    [chapter=first]
+    [chapter=first, 
+    style=
+        color:blue; margin-left:100px]
     This paper is aimed to be like a full example of what the mino parser can do
     It should be consistant with the syntax accross dev branches.
     
