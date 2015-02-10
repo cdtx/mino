@@ -22,7 +22,7 @@ MINO documentation
     # Unordered list items
         [ul_item=1]
         - Item 1
-            - Item 1.1
+            - Item 1.1      [ul_extra_item=1.1]
             - Item 1.2
         - Item 2
             - Item 2.1
@@ -46,7 +46,7 @@ MINO documentation
                 
     # Table
         f(x) = 2x
-        | x | y |
+        | x | y |       [line=red]
         | 0 | 0 |
         | 1 | 2 |
         | 2 | 4 |

@@ -108,15 +108,19 @@ class mdElement:
         self.childs = []
         
         self.extraParams = None
-        # If extraParam have been found on the same line, process it now
-        if inputs.get('extra'):
-            self.extraParams = ElementsFactory().get('Extra params', {'content': inputs['extra']})
+        self.extractExtraParams()
+
         
         self.indentSize = 4
 
         self.acceptList = []
         log(self, 'mino/parser/info', 'Created element [%s]'%name)
         
+    def extractExtraParams(self):
+        # If extraParam have been found on the same line, process it now
+        if self.inputs.get('extra'):
+            self.extraParams = ElementsFactory().get('Extra params', {'content': self.inputs['extra']})
+
     def accept(self, elem):
         if self.opened:
             if elem.name == 'Empty line':
@@ -182,10 +186,10 @@ class mdRootDoc(mdElement):
         return -1
         
     def append(self, elem):
-        if self.processExtraParams(elem):
+        if self.applyExtraParams(elem):
             mdElement.append(self, elem)
             
-    def processExtraParams(self, elem):
+    def applyExtraParams(self, elem):
         if elem.name == 'Extra params':
             self.pending['Extra params'] = elem
             return False
@@ -239,6 +243,10 @@ class mdList(mdElement):
 
         self.childs = [self.newItem(inputs)]
            
+    def extractExtraParams(self):
+        # If inline extra params are found here, there are for the listItem, not the list
+        pass
+
     def accept(self, elem):
         return (elem.name == self.name) or (self.childs[-1].accept(elem))
         
@@ -298,6 +306,10 @@ class mdTable(mdElement):
         self.opened = True
 
         self.childs = [mdTableLine(inputs)]
+
+    def extractExtraParams(self):
+        # If there are inline extraparams, there are for the line, not the table
+        pass
 
     def accept(self, elem):
         return self.childs[-1].accept(elem)
