@@ -1,0 +1,3 @@
+[submodule "styles/default/reveal"]
+	path = styles/default/reveal
+	url = https://github.com/hakimel/reveal.js.git
