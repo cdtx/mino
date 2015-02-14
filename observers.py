@@ -304,7 +304,6 @@ class SlidesObserver(HtmlDocObserver):
         if issuer.extraParams:
             _type = issuer.extraParams.all.get('type')
             if (_type == 'summary') and (event == 'mino/doc/start'):
-                print 'Opening slide'
                 self.slidesInProgress += 1
                 self.str += '<section>'
 
@@ -321,7 +320,6 @@ class SlidesObserver(HtmlDocObserver):
         if issuer.extraParams:
             _type = issuer.extraParams.all.get('type')
             if (_type == 'summary') and (event == 'mino/doc/stop'):
-                print 'Closing slide'
                 self.slidesInProgress -= 1
                 self.str += '</section>'
 
