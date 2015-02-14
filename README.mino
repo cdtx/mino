@@ -7,20 +7,22 @@ MINO documentation
     This paper is aimed to be like a full example of what the mino parser can do
     It should be consistant with the syntax accross dev branches.
     
-    [name=before_title]
+    [type=summary,name=before_title]
     # Titles
+        [type=summary]
         # Title 1
             Paragraph under the title 1
             # Title 1.1
                 Paragraph under the title 1.1
             # Title 1.2
                 Paragraph under the title 1.2
+        [type=summary]
         # Title 2
             Paragraph under the title 2
             # Title 2.1
                 Paragraph under the title 2.1
                 
-    [name=before_title_2]
+    [type=summary, name=before_title_2]
     # Unordered list items
         [ul_item=1]
         - Item 1

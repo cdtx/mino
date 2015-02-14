@@ -208,6 +208,9 @@ class mdExtraParams(mdElement):
             m = re.match(r'(.+?)=(.*)', x.strip())
             if m:
                 self.all[m.groups()[0].strip()] = m.groups()[1].strip()
+
+    def __item__(self, key):
+        return self.all[key]
  
 class mdEmptyLine(mdElement):
     def __init__(self, name, inputs):

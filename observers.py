@@ -218,7 +218,112 @@ class PdfDocObserver(HtmlDocObserver):
         
         return (before, after)
 
-    def toFile(self, fileName):
-        weasyprint.HTML(string=self.str, base_url=os.path.abspath(__file__)).write_pdf(target=fileName)
     
-    
+class SlidesObserver(HtmlDocObserver):
+    '''
+    Using reveal.js, slides generation becomes a special case of html generation
+    Except the header that changes
+    '''
+    def __init__(self):
+        HtmlDocObserver.__init__(self)
+        self.slidesInProgress=0
+
+    def mdRootDoc(self, issuer):
+        before = [
+            '''<!doctype html>''',
+            '''<html lang="en">''',
+            '''''',
+            '''	<head>''',
+            '''		<meta charset="utf-8">''',
+            '''''',
+            '''		<meta name="apple-mobile-web-app-capable" content="yes" />''',
+            '''		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />''',
+            '''''',
+            '''		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">''',
+            '''''',
+            '''		<link rel="stylesheet" href="css/reveal.css">''',
+            '''		<link rel="stylesheet" href="css/theme/black.css" id="theme">''',
+            '''''',
+            '''		<!-- Code syntax highlighting -->''',
+            '''		<link rel="stylesheet" href="lib/css/zenburn.css">''',
+            '''''',
+            '''		<!--[if lt IE 9]>''',
+            '''		<script src="lib/js/html5shiv.js"></script>''',
+            '''		<![endif]-->''',
+            '''	</head>''',
+            '''''',
+            '''	<body>''',
+            '''''',
+            '''		<div class="reveal">''',
+            '''''',
+            '''			<!-- Any section element inside of this container is displayed as a slide -->''',
+            '''			<div class="slides">''',
+               ] 
+
+        after = [
+            '''         </div>''',
+            '''     </div>''',
+            '''     <script src="lib/js/head.min.js"></script>''',
+            '''		<script src="js/reveal.js"></script>''',
+            '''''',
+            '''		<script>''',
+            '''''',
+            '''			// Full list of configuration options available at:''',
+            '''			// https://github.com/hakimel/reveal.js#configuration''',
+            '''			Reveal.initialize({''',
+            '''				controls: true,''',
+            '''				progress: true,''',
+            '''				history: true,''',
+            '''				center: true,''',
+            '''''',
+            '''				transition: 'slide', // none/fade/slide/convex/concave/zoom''',
+            '''''',
+            '''				// Optional reveal.js plugins''',
+            '''				dependencies: [''',
+            '''					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },''',
+            '''					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''',
+            '''					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''',
+            '''					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },''',
+            '''					{ src: 'plugin/zoom-js/zoom.js', async: true },''',
+            '''					{ src: 'plugin/notes/notes.js', async: true }''',
+            '''				]''',
+            '''			});''',
+            '''''',
+            '''		</script>''',
+            '''''',
+            '''	</body>''',
+            '''</html>''',
+               ]
+
+        return (before, after)
+
+    def update(self, issuer, event, message):
+        if issuer.name == 'rootDoc':
+            HtmlDocObserver.update(self, issuer, event, message)
+
+        if issuer.extraParams:
+            _type = issuer.extraParams.all.get('type')
+            if (_type == 'summary') and (event == 'mino/doc/start'):
+                print 'Opening slide'
+                self.slidesInProgress += 1
+                self.str += '<section>'
+
+        if self.slidesInProgress > 0:
+            if event == 'mino/doc/start':
+                linesBefore = self.functionFactory(issuer.name)(issuer)[0]
+                self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
+                self.indent += 1
+            elif event == 'mino/doc/stop':
+                self.indent -= 1
+                linesAfter = self.functionFactory(issuer.name)(issuer)[1]
+                self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
+        
+        if issuer.extraParams:
+            _type = issuer.extraParams.all.get('type')
+            if (_type == 'summary') and (event == 'mino/doc/stop'):
+                print 'Closing slide'
+                self.slidesInProgress -= 1
+                self.str += '</section>'
+
+
+
