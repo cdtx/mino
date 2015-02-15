@@ -51,11 +51,9 @@ class HtmlDocObserver:
         return self.html(['<br>'])
         
     def mdTitle(self, issuer):
-        before =    [   '<div class="slider">',
-                        '    <h%d %s>' % (issuer.indent()+1, self.extraParams(issuer)),
+        before =    [   '    <h%d %s>' % (issuer.indent()+1, self.extraParams(issuer)),
                         '        %s' % self.htmlReplaceInline(issuer.title),
                         '    </h%d>' % (issuer.indent()+1),
-                        '</div>',
                     ]
         return (before, [])
         
