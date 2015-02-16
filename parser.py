@@ -40,7 +40,7 @@ def log(issuer=None, event='', message=''):
 
 linePatterns = (
     # Regex, flags, description
-    # Markdutr elements
+    # mino elements
     (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE | re.DOTALL, 'Extra params'),
     (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, 'Document title'),
     (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Title'),
@@ -375,19 +375,19 @@ class mdPlugin(mdElement):
             self.content = self.inputs['content']
 
         self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
-    
+
+        # DEBUG
+        self.run()
+
     def run(self):
         self.output.truncate(0)
         output = self.output
+        # If the aim is to execute python, it must be called inside this module so that it has 
+        # access to the whole context
         if self.pluginName.lower() == 'python':
             exec(self.content, locals(), globals())
         else:
             self.plugin.run(self.content, self.output, globals(), locals())
-        
-    def display(self, pad=0):
-        self.output.truncate(0)
-        self.run()
-        return 'Plugin execution...'        
 
 class mdLink(mdElement):
     def __init__(self, name, inputs):
@@ -406,24 +406,27 @@ class mdImage(mdLink):
         
     def display(self, pad=0):
         return '    '*pad + 'Image : ' + self.url + '\n'
+        return parse(content)
+
+def parse(string):
+    doc = ElementsFactory().get('rootDoc')
+    while string:
+        res = None
+        for (pat, opt, type) in linePatterns:
+            res = re.match(pat, string, flags=opt)
+            if res:
+                doc.append(ElementsFactory().get(type, res.groupdict()))
+                break
+        if (not res) or (len(res.group()) == 0):
+            raise Exception('Parser is stuck :\n' + string)
+        string = string[len(res.group()):]
+    return doc
         
 def load(fileName):
     with open(fileName, 'r') as file:
         content = file.read()
-        doc = ElementsFactory().get('rootDoc')
-        while content:
-            res = None
-            for (pat, opt, type) in linePatterns:
-                res = re.match(pat, content, flags=opt)
-                if res:
-                    doc.append(ElementsFactory().get(type, res.groupdict()))
-                    break
-            if (not res) or (len(res.group()) == 0):
-                raise Exception('Parser is stuck :\n' + content)
-            content = content[len(res.group()):]
+        return parse(content)
 
-    return doc
-            
 def usage():
     print '''mino.py FILE'''
 
