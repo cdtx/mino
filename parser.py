@@ -53,7 +53,7 @@ linePatterns = (
     (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Include'),
     
     # Plugin
-    (r'(?P<indent>[\t ]*)_\{(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Plugin'),
+    (r'(?P<indent>[\t ]*)_\{ *(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, 'Plugin'),
     
     # Decorative lines
     (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?\n', re.IGNORECASE, 'Text line'),
