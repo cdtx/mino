@@ -1,5 +1,6 @@
 import os, re
 
+from cdtx.mino import parser
 from mino.parser import inlinePatterns
 
 from pygments import highlight
@@ -131,51 +132,51 @@ class HtmlDocObserver:
         return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.extraParams.all.iteritems()])
              
 
-    def functionFactory(self, name):
-        if name == 'rootDoc':
-            return self.mdRootDoc
-        elif name == 'Empty line':
-            return self.mdEmptyLine
-        elif name == 'Document title':
-            return self.mdDocumentTitle
-        elif name == 'Title':
-            return self.mdTitle
-        elif name == 'Text line':
-            return self.mdTextLine
+    def functionFactory(self, issuer):
+        if isinstance(issuer, parser.mdRootDoc):
+            return self.mdRootDoc(issuer)
+        elif isinstance(issuer, parser.mdEmptyLine):
+            return self.mdEmptyLine(issuer)
+        elif isinstance(issuer, parser.mdDocumentTitle):
+            return self.mdDocumentTitle(issuer)
+        elif isinstance(issuer, parser.mdTitle):
+            return self.mdTitle(issuer)
+        elif isinstance(issuer, parser.mdTextLine):
+            return self.mdTextLine(issuer)
             
-        elif name == 'Ordered list':
-            return self.mdOrderedList
-        elif name == 'Ordered list item':
-            return self.mdListItem
+        elif isinstance(issuer, parser.mdOrderedList):
+            return self.mdOrderedList(issuer)
+        elif isinstance(issuer, parser.mdListItem):
+            return self.mdListItem(issuer)
             
-        elif name == 'Unordered list':
-            return self.mdUnorderedList
-        elif name == 'Unordered list item':
-            return self.mdListItem
+        elif isinstance(issuer, parser.mdUnorderedList):
+            return self.mdUnorderedList(issuer)
+        elif isinstance(issuer, parser.mdListItem):
+            return self.mdListItem(issuer)
             
-        elif name == 'Table':
-            return self.mdTable
-        elif name == 'Table line':
-            return self.mdTableLine
-        elif name == 'Bloc of code':
-            return self.mdBlocOfCode
-        elif name == 'Plugin':
-            return self.mdPlugin
-        elif name == 'Link':
-            return self.mdLink
-        elif name == 'Image':
-            return self.mdImage
+        elif isinstance(issuer, parser.mdTable):
+            return self.mdTable(issuer)
+        elif isinstance(issuer, parser.mdTableLine):
+            return self.mdTableLine(issuer)
+        elif isinstance(issuer, parser.mdBlocOfCode):
+            return self.mdBlocOfCode(issuer)
+        elif isinstance(issuer, parser.mdPlugin):
+            return self.mdPlugin(issuer)
+        elif isinstance(issuer, parser.mdLink):
+            return self.mdLink(issuer)
+        elif isinstance(issuer, parser.mdImage):
+            return self.mdImage(issuer)
         else:
-            raise Exception('Unknown element [%s]' % name)
+            raise Exception('Unknown element [%s]' % str(issuer))
     
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            linesBefore = self.functionFactory(issuer.name)(issuer)[0]
+            linesBefore = self.functionFactory(issuer)[0]
             self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
             self.indent += 1
         elif event == 'mino/doc/stop':
             self.indent -= 1
-            linesAfter = self.functionFactory(issuer.name)(issuer)[1]
+            linesAfter = self.functionFactory(issuer)[1]
             self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
 
     def htmlReplaceInline(self, content):
@@ -307,12 +308,12 @@ class SlidesObserver(HtmlDocObserver):
 
         if self.slidesInProgress > 0:
             if event == 'mino/doc/start':
-                linesBefore = self.functionFactory(issuer.name)(issuer)[0]
+                linesBefore = self.functionFactory(issuer)[0]
                 self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
                 self.indent += 1
             elif event == 'mino/doc/stop':
                 self.indent -= 1
-                linesAfter = self.functionFactory(issuer.name)(issuer)[1]
+                linesAfter = self.functionFactory(issuer)[1]
                 self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
         
         if issuer.extraParams:
