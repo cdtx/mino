@@ -357,7 +357,7 @@ linePatterns = (
     # (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Include'),
     
     # Plugin
-    (r'(?P<indent>[\t ]*)_\{(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, mdPlugin),
+    (r'(?P<indent>[\t ]*)_\{ *(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, mdPlugin),
     
     # Decorative lines
     (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?\n', re.IGNORECASE, mdTextLine),
@@ -371,6 +371,20 @@ inlinePatterns = (
     (r'--(.*?)--', re.IGNORECASE, 'scratched'),
     (r'!\((.*?)\)\((.*?)\)', re.IGNORECASE, 'link'),
 )
+
+def parse(string):
+    doc = mdRootDoc()
+    while string:
+        res = None
+        for (pat, opt, cls) in linePatterns:
+            res = re.match(pat, string, flags=opt)
+            if res:
+                doc.append(cls(res.groupdict()))
+                break
+        if (not res) or (len(res.group()) == 0):
+            raise Exception('Parser is stuck :\n' + string)
+        string = string[len(res.group()):]
+    return doc
 
 def load(fileName):
     with open(fileName, 'r') as file:
