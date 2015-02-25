@@ -317,15 +317,12 @@ class mdPlugin(mdElement):
     def run(self):
         self.output.truncate(0)
         output = self.output
+        # If the aim is to execute python, it must be called inside this module so that it has 
+        # access to the whole context
         if self.pluginName.lower() == 'python':
             exec(self.content, locals(), globals())
         else:
             self.plugin.run(self.content, self.output, globals(), locals())
-        
-    def display(self, pad=0):
-        self.output.truncate(0)
-        self.run()
-        return 'Plugin execution...'        
 
 class mdLink(mdElement):
     def __init__(self, inputs):
@@ -378,22 +375,8 @@ inlinePatterns = (
 def load(fileName):
     with open(fileName, 'r') as file:
         content = file.read()
-        doc = mdRootDoc()
-        while content:
-            res = None
-            # Walk the whole patterns
-            for (pat, opt, cls) in linePatterns:
-                # If the content matches with the pattern
-                res = re.match(pat, content, flags=opt)
-                if res:
-                    doc.append(cls(res.groupdict()))
-                    break
-            if (not res) or (len(res.group()) == 0):
-                raise Exception('Parser is stuck :\n' + content)
-            content = content[len(res.group()):]
+        return parse(content)
 
-    return doc
-            
 def usage():
     print '''mino.py FILE'''
 

@@ -57,7 +57,8 @@ MINO documentation
             1. Item 2.3
                 1. Item 2.3.1
                 
-                
+    <a href="http://google.fr">Go to Google</a>
+
                 
     [type=summary]
     # Table
@@ -101,3 +102,16 @@ MINO documentation
         
         
     
+    # Python plugin
+        _{ python
+            print 'xx'
+            i = 42
+        }_
+
+        _{python
+            print i
+            print self
+            print dir(self)
+            self.append(mdTextLine('Text line', {'indent':'    '*3, 'content':'Hello world !! Im from a plugin'}))
+        }_
+
