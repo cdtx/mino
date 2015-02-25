@@ -49,12 +49,12 @@ class HtmlDocObserver:
         return (before, after)
         
     def mdEmptyLine(self, issuer):
-        return self.html(['<br>'])
+        return (['<br>'], [])
         
     def mdTitle(self, issuer):
-        before =    [   '    <h%d %s>' % (issuer.indent()+1, self.extraParams(issuer)),
+        before =    [   '    <h%d %s>' % (issuer._indent()+1, self.extraParams(issuer)),
                         '        %s' % self.htmlReplaceInline(issuer.title),
-                        '    </h%d>' % (issuer.indent()+1),
+                        '    </h%d>' % (issuer._indent()+1),
                     ]
         return (before, [])
         

@@ -112,6 +112,6 @@ MINO documentation
             print i
             print self
             print dir(self)
-            self.append(mdTextLine('Text line', {'indent':'    '*3, 'content':'Hello world !! Im from a plugin'}))
+            self.append(mdTextLine(content='A plugin that adds text'))
         }_
 

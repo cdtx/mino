@@ -40,15 +40,28 @@ def log(issuer=None, event='', message=''):
 
     
 class mdElement:
-    def __init__(self, inputs={}):
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            ========   ================= 
+             name       default value
+            ========   =================
+             indent     ''
+             extra      None
+            ========   =================
+        '''
+        for (p, d) in(  
+                        ('indent', ''),
+                        ('extra', None),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+
         self.id = None
-        self.inputs = inputs
         self.opened = False
         self.childs = []
         
         self.extraParams = None
         self.extractExtraParams()
-
         
         self.indentSize = 4
 
@@ -57,8 +70,8 @@ class mdElement:
         
     def extractExtraParams(self):
         # If extraParam have been found on the same line, process it now
-        if self.inputs.get('extra'):
-            self.extraParams = mdExtraParams({'content': self.inputs['extra']})
+        if self.extra:
+            self.extraParams = mdExtraParams(content=self.extra)
 
     def accept(self, elem):
         if self.opened:
@@ -87,9 +100,9 @@ class mdElement:
                 self.merge(elem)
         else:
             # Elem destination is deeper in the tree
-            if elem.indent() > self.indent():
+            if elem._indent() > self._indent():
                 # Elem destination is just after this node
-                if elem.indent() == self.indent() + 1:
+                if elem._indent() == self._indent() + 1:
                     # If there are already childs and the last one absorb this last element
                     if self.childs != [] and self.childs[-1].accept(elem):
                         # Merge the nodes
@@ -102,10 +115,8 @@ class mdElement:
                     self.childs[-1].append(elem)
             
                         
-    def indent(self):
-        if self.inputs == {}:
-            return 0
-        return len(self.inputs['indent']) / self.indentSize
+    def _indent(self):
+        return len(self.indent) / self.indentSize
     
     def merge(self, elem):
         pass
@@ -117,11 +128,11 @@ class mdElement:
         log(self, 'mino/doc/stop')
 
 class mdRootDoc(mdElement):
-    def __init__(self):
-        mdElement.__init__(self)
+    def __init__(self, **kwargs):
+        mdElement.__init__(self, **kwargs)
         self.pending = {}
                 
-    def indent(self):
+    def _indent(self):
         return -1
         
     def append(self, elem):
@@ -139,10 +150,24 @@ class mdRootDoc(mdElement):
             return True
 
 class mdExtraParams(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+
+        mdElement.__init__(self, **kwargs)
+                
         self.all = {}
-        for x in inputs['content'].replace('\n', ' ').split(','):
+        for x in self.content.replace('\n', ' ').split(','):
             m = re.match(r'(.+?)=(.*)', x.strip())
             if m:
                 self.all[m.groups()[0].strip()] = m.groups()[1].strip()
@@ -151,39 +176,92 @@ class mdExtraParams(mdElement):
         return self.all[key]
  
 class mdEmptyLine(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        mdElement.__init__(self, **kwargs)
         
 class mdTitle(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+
+        mdElement.__init__(self, **kwargs)
                
-        self.title = inputs['content']
+        self.title = self.content
 
 class mdDocumentTitle(mdTitle):
-    def __init__(self, inputs):
-        mdTitle.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+
+        mdElement.__init__(self, **kwargs)
 
 class mdTextLine(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
-        self.opened = True
-        self.acceptList = ['Text line', 'Empty line']
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
         
-        self.text = inputs['content'].strip()
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
+
+        self.opened = True
+        self.acceptList = [mdTextLine, mdEmptyLine]
+        
+        self.text = self.content.strip()
 
     def merge(self, elem):
         if isinstance(elem, mdTextLine):
-            self.text += '\n'+elem.inputs['content'].strip()
+            self.text += '\n'+elem.text
         elif isinstance(elem, mdEmptyLine):
             self.opened = False
         
 class mdList(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
         self.opened = True
 
-        self.childs = [self.newItem(inputs)]
+        self.childs = [self.newItem(**kwargs)]
            
     def extractExtraParams(self):
         # If inline extra params are found here, there are for the listItem, not the list
@@ -199,17 +277,30 @@ class mdList(mdElement):
         if isinstance(elem, mdEmptyLine):
             self.opened = False
         else:
-            self.childs.append(self.newItem(elem.inputs))
+            self.childs.append(self.newItem(content=elem.content, indent=elem.indent, extra=elem.extra))
            
-    def newItem(self, inputs):
+    def newItem(self, **kwargs):
         pass
 
 class mdListItem(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
         self.opened = True
                
-        self.text = inputs['content'].strip()
+        self.text = self.content.strip()
 
     def append(self, elem):
         if isinstance(elem, mdEmptyLine):
@@ -218,36 +309,47 @@ class mdListItem(mdElement):
             mdElement.append(self, elem)
         
 class mdOrderedList(mdList):
-    def __init__(self, inputs):
-        mdList.__init__(self, inputs)
-        self.childItem = 'Ordered list item'
+    def __init__(self, **kwargs):
+        mdList.__init__(self, **kwargs)
                 
-    def newItem(self, inputs):
-        return mdOrderedListItem(inputs)
+    def newItem(self, **kwargs):
+        return mdOrderedListItem(**kwargs)
     
 class mdOrderedListItem(mdListItem):
-    def __init__(self, inputs):
-        mdListItem.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        mdListItem.__init__(self, **kwargs)
         
 class mdUnorderedList(mdList):
-    def __init__(self, inputs):
-        mdList.__init__(self, inputs)
-        self.childItem = 'Unordered list item'
+    def __init__(self, **kwargs):
+        mdList.__init__(self, **kwargs)
         
-    def newItem(self, inputs):
-        return mdUnorderedListItem(inputs)
+    def newItem(self, **kwargs):
+        return mdUnorderedListItem(**kwargs)
     
 class mdUnorderedListItem(mdListItem):
-    def __init__(self, inputs):
-        mdListItem.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        mdListItem.__init__(self, **kwargs)
 
     
 class mdTable(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
         self.opened = True
 
-        self.childs = [mdTableLine(inputs)]
+        self.childs = [mdTableLine(**kwargs)]
 
     def extractExtraParams(self):
         # If there are inline extraparams, there are for the line, not the table
@@ -261,59 +363,93 @@ class mdTable(mdElement):
             
     def merge(self, elem):
         if isinstance(elem, mdTable):
-            self.childs.append(mdTableLine(elem.inputs))
+            self.childs.append(mdTableLine(content=elem.content))
         elif isinstance(elem, mdEmptyLine):
             self.opened = False
     
-    def display(self, pad=0):
-        str = ''
-        for x in self.childs:
-            str += ' '*4*pad + x.display(pad) + '\n'
-        return str
-
 class mdTableLine(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
         self.opened = True
                
-        self.elements = inputs['content'].strip().split('|')[1:-1]
+        self.elements = self.content.strip().split('|')[1:-1]
 
     def append(self, elem):
         if isinstance(elem, mdEmptyLine):
             self.opened = False
         else:
             mdElement.append(self, elem)
-        
-    def display(self, pad=0):
-        return ' | '.join(self.elements)
     
+
 class mdBlocOfCode(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             lang       'text'
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('lang', 'text'),
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
         self.opened = False
         
-        self.lang = inputs['lang'].strip()
-        self.text = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs['content'].split('\n'))
+        self.lang = self.lang.strip()
+        self.text = '\n'.join(x[(self._indent() + 1) * self.indentSize:] for x in self.content.split('\n'))
 
-    def display(self, pad=0):
-        return self.text + '\n'
 
 class mdPlugin(mdElement):
     output = io.StringIO()
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
+        
+            =========  ================= 
+             name       default value
+            =========  =================
+             name       'python'
+             content    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('name', 'python'),
+                        ('content', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
         self.opened = False
         
-        self.pluginName = inputs['name']
+        self.pluginName = self.name
         
         # Plugin content can be on the same line that the open , or several lines just under the open with indentation
-        if self.inputs['content'].startswith('\r') or self.inputs['content'].startswith('\n'):
-            self.content = '\n'.join(x[(self.indent() + 1) * self.indentSize:] for x in inputs['content'].split('\n'))
+        if self.content.startswith('\r') or self.content.startswith('\n'):
+            self.content = '\n'.join(x[(self._indent() + 1) * self.indentSize:] for x in self.content.split('\n'))
         else:
-            self.content = self.inputs['content']
-
-        self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
+            self.content = self.content
     
+        # DEBUG
+        self.run()
+
     def run(self):
         self.output.truncate(0)
         output = self.output
@@ -322,29 +458,44 @@ class mdPlugin(mdElement):
         if self.pluginName.lower() == 'python':
             exec(self.content, locals(), globals())
         else:
+            self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
             self.plugin.run(self.content, self.output, globals(), locals())
 
+    def append(self, elem):
+        if self.childs != []:
+            self.childs.append(elem)
+        else:
+            self.childs = [elem]
+
+
 class mdLink(mdElement):
-    def __init__(self, inputs):
-        mdElement.__init__(self, inputs)
-        self.opened = False
-            
-        self.url = self.inputs['url']
-        self.caption = self.inputs['caption']
+    def __init__(self, **kwargs):
+        ''' Constructor parameters :
         
-    def display(self, pad=0):
-        return '    '*pad + 'link : ' + self.url + '\n'
+            =========  ================= 
+             name       default value
+            =========  =================
+             url        ''
+             caption    ''
+            =========  =================
+        '''
+        for (p, d) in(  
+                        ('url', ''),
+                        ('caption', ''),
+                    ):
+            setattr(self, p, kwargs.get(p, d))
+                
+        mdElement.__init__(self, **kwargs)
+        self.opened = False
+
 
 class mdImage(mdLink):
-    def __init__(self, inputs):
-        mdLink.__init__(self, inputs)
-        
-    def display(self, pad=0):
-        return '    '*pad + 'Image : ' + self.url + '\n'
+    def __init__(self, **kwargs):
+        mdLink.__init__(self, **kwargs)
         
 linePatterns = (
     # Regex, flags, description
-    # Markdutr elements
+    # mino elements
     (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE | re.DOTALL, mdExtraParams),
     (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, mdDocumentTitle),
     (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdTitle),
@@ -379,7 +530,7 @@ def parse(string):
         for (pat, opt, cls) in linePatterns:
             res = re.match(pat, string, flags=opt)
             if res:
-                doc.append(cls(res.groupdict()))
+                doc.append(cls(**res.groupdict()))
                 break
         if (not res) or (len(res.group()) == 0):
             raise Exception('Parser is stuck :\n' + string)
