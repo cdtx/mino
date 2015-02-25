@@ -114,10 +114,10 @@ MINO documentation
             print dir(self)
             self.append(mdTextLine(content='A plugin that adds text'))
 
-            l = mdUnorderedList()
-            l.append(mdUnorderedListItem(content='a'))
-            l.append(mdUnorderedListItem(content='a'))
-            l.append(mdUnorderedListItem(content='a'))
+            l = mdUnorderedList(content='a')
+            l.merge(mdUnorderedList(content='b'))
+            l.append(mdUnorderedListItem(content='c'))
+            l.append(mdUnorderedListItem(content='d'))
 
             self.append(l)
         }_

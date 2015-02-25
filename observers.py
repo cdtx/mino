@@ -1,6 +1,6 @@
 import os, re
 
-from cdtx.mino import parser
+from mino import parser
 from mino.parser import inlinePatterns
 
 from pygments import highlight

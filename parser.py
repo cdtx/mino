@@ -92,10 +92,10 @@ class mdElement:
             else:
                 return False
                 
-    def append(self, elem):
+    def spread(self, elem):
         if isinstance(elem, mdEmptyLine):
             if self.childs != [] and self.childs[-1].accept(elem):
-                self.childs[-1].append(elem)
+                self.childs[-1].spread(elem)
             else:
                 self.merge(elem)
         else:
@@ -112,8 +112,10 @@ class mdElement:
                         self.childs.append(elem)
                 else:
                     # append elem at a level under 
-                    self.childs[-1].append(elem)
+                    self.childs[-1].spread(elem)
             
+    def append(self, elem):
+        self.childs.append(elem)
                         
     def _indent(self):
         return len(self.indent) / self.indentSize
@@ -135,9 +137,9 @@ class mdRootDoc(mdElement):
     def _indent(self):
         return -1
         
-    def append(self, elem):
+    def spread(self, elem):
         if self.applyExtraParams(elem):
-            mdElement.append(self, elem)
+            mdElement.spread(self, elem)
             
     def applyExtraParams(self, elem):
         if isinstance(elem, mdExtraParams):
@@ -270,8 +272,8 @@ class mdList(mdElement):
     def accept(self, elem):
         return (isinstance(elem, type(self)) or (self.childs[-1].accept(elem)))
         
-    def append(self, elem):
-        return self.childs[-1].append(elem)
+    def spread(self, elem):
+        return self.childs[-1].spread(elem)
         
     def merge(self, elem):
         if isinstance(elem, mdEmptyLine):
@@ -302,11 +304,11 @@ class mdListItem(mdElement):
                
         self.text = self.content.strip()
 
-    def append(self, elem):
+    def spread(self, elem):
         if isinstance(elem, mdEmptyLine):
             self.opened = False
         else:
-            mdElement.append(self, elem)
+            mdElement.spread(self, elem)
         
 class mdOrderedList(mdList):
     def __init__(self, **kwargs):
@@ -358,8 +360,8 @@ class mdTable(mdElement):
     def accept(self, elem):
         return self.childs[-1].accept(elem)
             
-    def append(self, elem):
-        return mdElement.append(self, elem)
+    def spread(self, elem):
+        return mdElement.spread(self, elem)
             
     def merge(self, elem):
         if isinstance(elem, mdTable):
@@ -387,11 +389,11 @@ class mdTableLine(mdElement):
                
         self.elements = self.content.strip().split('|')[1:-1]
 
-    def append(self, elem):
+    def spread(self, elem):
         if isinstance(elem, mdEmptyLine):
             self.opened = False
         else:
-            mdElement.append(self, elem)
+            mdElement.spread(self, elem)
     
 
 class mdBlocOfCode(mdElement):
@@ -461,12 +463,6 @@ class mdPlugin(mdElement):
             self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
             self.plugin.run(self.content, self.output, globals(), locals())
 
-    def append(self, elem):
-        if self.childs != []:
-            self.childs.append(elem)
-        else:
-            self.childs = [elem]
-
 
 class mdLink(mdElement):
     def __init__(self, **kwargs):
@@ -530,7 +526,7 @@ def parse(string):
         for (pat, opt, cls) in linePatterns:
             res = re.match(pat, string, flags=opt)
             if res:
-                doc.append(cls(**res.groupdict()))
+                doc.spread(cls(**res.groupdict()))
                 break
         if (not res) or (len(res.group()) == 0):
             raise Exception('Parser is stuck :\n' + string)
