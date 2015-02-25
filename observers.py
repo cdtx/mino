@@ -162,10 +162,10 @@ class HtmlDocObserver:
             return self.mdBlocOfCode(issuer)
         elif isinstance(issuer, parser.mdPlugin):
             return self.mdPlugin(issuer)
-        elif isinstance(issuer, parser.mdLink):
-            return self.mdLink(issuer)
         elif isinstance(issuer, parser.mdImage):
             return self.mdImage(issuer)
+        elif isinstance(issuer, parser.mdLink):
+            return self.mdLink(issuer)
         else:
             raise Exception('Unknown element [%s]' % str(issuer))
     

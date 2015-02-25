@@ -69,29 +69,29 @@ MINO documentation
         | 2 | 4 |
         
     # Bloc of code
-        Bash
-        ``` bash
-            cd /dev/project
-            grep -E "main\(.*\)" --include="*.c" .
-        ```
+        # Bash
+            ``` bash
+                cd /dev/project
+                grep -E "main\(.*\)" --include="*.c" .
+            ```
         
-        cpp
-        ``` cpp
-            #include <stdio.h>
-            
-            int main(int argc, char **argv) {
-                printf("Hello world");
-            }
-        ```
-        
-        Python
-        ``` python
-            def f():
-                print 'fluflu'
+        # cpp
+            ``` cpp
+                #include <stdio.h>
                 
-            if __name__ == '__main__':
-                f()
-        ```
+                int main(int argc, char **argv) {
+                    printf("Hello world");
+                }
+            ```
+        
+        # Python
+            ``` python
+                def f():
+                    print 'fluflu'
+                    
+                if __name__ == '__main__':
+                    f()
+            ```
         
     # Link
         !(https://github.com/cdtx/mino)(Fork me on GitHub)
@@ -113,5 +113,12 @@ MINO documentation
             print self
             print dir(self)
             self.append(mdTextLine(content='A plugin that adds text'))
+
+            l = mdUnorderedList()
+            l.append(mdUnorderedListItem(content='a'))
+            l.append(mdUnorderedListItem(content='a'))
+            l.append(mdUnorderedListItem(content='a'))
+
+            self.append(l)
         }_
 
