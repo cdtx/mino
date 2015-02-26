@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os, re
 
 from mino import parser
@@ -15,6 +17,7 @@ class DumbObserver:
 class HtmlDocObserver:
     def __init__(self):
         self.indent = 0
+        self.titleLevel = 1
         self.style = 'default'
         self.str = ''
         
@@ -31,6 +34,7 @@ class HtmlDocObserver:
                         '<html>',
                         '    <!-- Not supported yet -->',
                         '    <head>',
+                        '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
                         '        <link rel="stylesheet" href="styles/%s/style.css" />' % self.style,
                         # '    <style>',
                         # '     %s' % style.read(),
@@ -52,9 +56,9 @@ class HtmlDocObserver:
         return (['<br>'], [])
         
     def mdTitle(self, issuer):
-        before =    [   '    <h%d %s>' % (issuer._indent()+1, self.extraParams(issuer)),
+        before =    [   '    <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
                         '        %s' % self.htmlReplaceInline(issuer.title),
-                        '    </h%d>' % (issuer._indent()+1),
+                        '    </h%d>' % (self.titleLevel),
                     ]
         return (before, [])
         
@@ -132,7 +136,7 @@ class HtmlDocObserver:
         return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.extraParams.all.iteritems()])
              
 
-    def functionFactory(self, issuer):
+    def functionFactory(self, issuer, event):
         if isinstance(issuer, parser.mdRootDoc):
             return self.mdRootDoc(issuer)
         elif isinstance(issuer, parser.mdEmptyLine):
@@ -140,6 +144,10 @@ class HtmlDocObserver:
         elif isinstance(issuer, parser.mdDocumentTitle):
             return self.mdDocumentTitle(issuer)
         elif isinstance(issuer, parser.mdTitle):
+            if event == 'mino/doc/start':
+                self.titleLevel += 1
+            elif event == 'mino/doc/stop':
+                self.titleLevel -= 1
             return self.mdTitle(issuer)
         elif isinstance(issuer, parser.mdTextLine):
             return self.mdTextLine(issuer)
@@ -171,12 +179,12 @@ class HtmlDocObserver:
     
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            linesBefore = self.functionFactory(issuer)[0]
+            linesBefore = self.functionFactory(issuer, event)[0]
             self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
             self.indent += 1
         elif event == 'mino/doc/stop':
             self.indent -= 1
-            linesAfter = self.functionFactory(issuer)[1]
+            linesAfter = self.functionFactory(issuer, event)[1]
             self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
 
     def htmlReplaceInline(self, content):
@@ -202,6 +210,7 @@ class PdfDocObserver(HtmlDocObserver):
                         '<html>',
                         '    <!-- Not supported yet -->',
                         '    <head>',
+                        '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
                         '        <link rel="stylesheet" href="styles/%s/pdf.css" />' % self.style,
                         '    </head>',
                         '    <body>',
@@ -233,7 +242,7 @@ class SlidesObserver(HtmlDocObserver):
             '''<html lang="en">''',
             '''''',
             '''	<head>''',
-            '''		<meta charset="utf-8">''',
+            '''     <meta http-equiv="content-type" content="text/html; charset=utf-8" />''',
             '''''',
             '''		<meta name="apple-mobile-web-app-capable" content="yes" />''',
             '''		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />''',
@@ -297,7 +306,7 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def update(self, issuer, event, message):
-        if issuer.name == 'rootDoc':
+        if isinstance(issuer, parser.mdRootDoc):
             HtmlDocObserver.update(self, issuer, event, message)
 
         if issuer.extraParams:
@@ -308,12 +317,12 @@ class SlidesObserver(HtmlDocObserver):
 
         if self.slidesInProgress > 0:
             if event == 'mino/doc/start':
-                linesBefore = self.functionFactory(issuer)[0]
+                linesBefore = self.functionFactory(issuer, event)[0]
                 self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
                 self.indent += 1
             elif event == 'mino/doc/stop':
                 self.indent -= 1
-                linesAfter = self.functionFactory(issuer)[1]
+                linesAfter = self.functionFactory(issuer, event)[1]
                 self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
         
         if issuer.extraParams:

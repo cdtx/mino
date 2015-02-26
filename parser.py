@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import pdb
 import sys, os, re, io
 import imp, traceback
