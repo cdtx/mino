@@ -6,23 +6,11 @@ body {
 
 
 
-
-
 strong, b {
     font-size: large;
 }
 
-.slider {
-	overflow-y: hidden;
-	max-height: 500px; /* approximate max height */
 
-	transition-property: all;
-	transition-duration: .5s;
-	transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
-}
-.slider.closed {
-	max-height: 0;
-}
 
 header div{
     width: 100%;
@@ -31,46 +19,58 @@ header div{
     background-size: 100%;
 }
 
-h1:before {
-    counter-increment: h1;
-    content: counter(h1) ". ";
+.minoParagraph1 {
     counter-reset: h2;
+    counter-increment: h1;
+}
+h1:before {
+    content: counter(h1) ". ";
 }
 h1 {
     color: darkcyan;
     font-size: xx-large;
-    counter-reset: h2;
 }
 
 
+.minoParagraph2 {
+    counter-reset: h3;
+    counter-increment: h2;
+}
 h2:before {
     content: counter(h2) ". ";
 }
 h2 {
     margin-left: 2%;
-    counter-increment: h2;
-    counter-reset: h3;
 }
 
 
+.minoParagraph3 {
+    counter-reset: h4;
+}
 h3:before {
     content: counter(h2) "." counter(h3) " ";
 }
 h3 {
     margin-left: 4%;
     counter-increment:h3;
-    counter-reset: h4;
 }
 
+
+.minoParagraph4 {
+    counter-reset: h5;
+}
 h4:before {
     content: counter(h2) "." counter(h3) "." counter(h4) " "
 }
 h4 {
     margin-left: 6%;
     counter-increment: h4;
-    counter-reset: h5;
 }
 
+
+.minoParagraph5 {
+    counter-reset: h6;
+}
 h5:before {
     counter-increment: h5;
     content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) " "

@@ -62,6 +62,7 @@ class mdElement:
         self.childs = []
         
         self.extraParams = None
+        self.groupExtraParams = None
         self.extractExtraParams()
         
         self.indentSize = 4
@@ -139,17 +140,17 @@ class mdRootDoc(mdElement):
         return -1
         
     def spread(self, elem):
-        if self.applyExtraParams(elem):
+        if self.applyGroupExtraParams(elem):
             mdElement.spread(self, elem)
             
-    def applyExtraParams(self, elem):
+    def applyGroupExtraParams(self, elem):
         if isinstance(elem, mdExtraParams):
-            self.pending['Extra params'] = elem
+            self.pending['Group extra params'] = elem
             return False
         else:
-            if self.pending.get('Extra params'):
-                elem.extraParams = self.pending.get('Extra params')
-                self.pending.pop('Extra params', 0)
+            if self.pending.get('Group extra params'):
+                elem.groupExtraParams = self.pending.get('Group extra params')
+                self.pending.pop('Group extra params', 0)
             return True
 
 class mdExtraParams(mdElement):

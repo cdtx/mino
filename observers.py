@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import os, re
 
-from mino import parser
-from mino.parser import inlinePatterns
+from cdtx.mino import parser
+from cdtx.mino.parser import inlinePatterns
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name 
@@ -56,11 +56,14 @@ class HtmlDocObserver:
         return (['<br>'], [])
         
     def mdTitle(self, issuer):
-        before =    [   '    <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
-                        '        %s' % self.htmlReplaceInline(issuer.title),
-                        '    </h%d>' % (self.titleLevel),
+        before =    [   '    <div class="minoParagraph%d" %s>' % (self.titleLevel, self.groupExtraParams(issuer)),
+                        '        <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
+                        '            %s' % self.htmlReplaceInline(issuer.title),
+                        '        </h%d>' % (self.titleLevel),
                     ]
-        return (before, [])
+        after =     [   '    </div>',
+                    ]
+        return (before, after)
         
     def mdDocumentTitle(self, issuer):
         return (['<!-- <doc_title> -->'], ['<!-- </doc_title> -->'])
@@ -135,6 +138,10 @@ class HtmlDocObserver:
             return ''
         return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.extraParams.all.iteritems()])
              
+    def groupExtraParams(self, issuer):
+        if issuer.groupExtraParams == None:
+            return ''
+        return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.groupExtraParams.all.iteritems()])
 
     def functionFactory(self, issuer, event):
         if isinstance(issuer, parser.mdRootDoc):
