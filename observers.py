@@ -233,6 +233,8 @@ class PdfDocObserver(HtmlDocObserver):
         
         return (before, after)
 
+    def toFile(self, fileName):
+        weasyprint.HTML(string=self.str, base_url=os.path.abspath(__file__)).write_pdf(fileName)
     
 class SlidesObserver(HtmlDocObserver):
     '''
