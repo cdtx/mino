@@ -20,6 +20,7 @@ class HtmlDocObserver:
         self.titleLevel = 1
         self.style = 'default'
         self.str = ''
+        self.basePath = os.path.dirname(__file__)
         
     def __str__(self):
         return self.str
@@ -35,7 +36,7 @@ class HtmlDocObserver:
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="styles/%s/style.css" />' % self.style,
+                        '        <link rel="stylesheet" href="%s/styles/%s/style.css" />' % (self.basePath, self.style),
                         # '    <style>',
                         # '     %s' % style.read(),
                         # '    </style>',
@@ -56,10 +57,10 @@ class HtmlDocObserver:
         return (['<br>'], [])
         
     def mdTitle(self, issuer):
-        before =    [   '    <div class="minoParagraph%d" %s>' % (self.titleLevel, self.groupExtraParams(issuer)),
-                        '        <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
-                        '            %s' % self.htmlReplaceInline(issuer.title),
-                        '        </h%d>' % (self.titleLevel),
+        before =    [   '    <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
+                        '        %s' % self.htmlReplaceInline(issuer.title),
+                        '    </h%d>' % (self.titleLevel),
+                        '    <div class="minoParagraph%d" %s>' % (self.titleLevel, self.groupExtraParams(issuer)),
                     ]
         after =     [   '    </div>',
                     ]
@@ -218,7 +219,7 @@ class PdfDocObserver(HtmlDocObserver):
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="styles/%s/pdf.css" />' % self.style,
+                        '        <link rel="stylesheet" href="%s/styles/%s/pdf.css" />' % (self.basePath, self.style),
                         '    </head>',
                         '    <body>',
                         '        <article>',
@@ -234,8 +235,10 @@ class PdfDocObserver(HtmlDocObserver):
         return (before, after)
 
     def toFile(self, fileName):
-        weasyprint.HTML(string=self.str, base_url=os.path.abspath(__file__)).write_pdf(fileName)
-    
+        weasy = weasyprint.HTML(string=self.str, base_url=os.path.abspath(__file__))    
+        x = weasy.render()
+        weasy.write_pdf(fileName)
+
 class SlidesObserver(HtmlDocObserver):
     '''
     Using reveal.js, slides generation becomes a special case of html generation
@@ -243,7 +246,7 @@ class SlidesObserver(HtmlDocObserver):
     '''
     def __init__(self):
         HtmlDocObserver.__init__(self)
-        self.slidesInProgress=0
+        self.slidesInProgress = 0
 
     def mdRootDoc(self, issuer):
         before = [
@@ -258,14 +261,14 @@ class SlidesObserver(HtmlDocObserver):
             '''''',
             '''		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">''',
             '''''',
-            '''		<link rel="stylesheet" href="css/reveal.css">''',
-            '''		<link rel="stylesheet" href="css/theme/black.css" id="theme">''',
+            '''		<link rel="stylesheet" href="%s/styles/%s/reveal/css/reveal.css">''' % (self.basePath, self.style),
+            '''		<link rel="stylesheet" href="%s/styles/%s/reveal/css/theme/black.css" id=theme">''' % (self.basePath, self.style),
             '''''',
             '''		<!-- Code syntax highlighting -->''',
-            '''		<link rel="stylesheet" href="lib/css/zenburn.css">''',
+            '''		<link rel="stylesheet" href="%s/styles/%s/reveal/lib/css/zenburn.css">''' % (self.basePath, self.style),
             '''''',
             '''		<!--[if lt IE 9]>''',
-            '''		<script src="lib/js/html5shiv.js"></script>''',
+            '''		<script src="%s/styles/%s/reveal/lib/js/html5shiv.js"></script>''' % (self.basePath, self.style),
             '''		<![endif]-->''',
             '''	</head>''',
             '''''',
@@ -280,8 +283,8 @@ class SlidesObserver(HtmlDocObserver):
         after = [
             '''         </div>''',
             '''     </div>''',
-            '''     <script src="lib/js/head.min.js"></script>''',
-            '''		<script src="js/reveal.js"></script>''',
+            '''     <script src="%s/styles/%s/reveal/lib/js/head.min.js"></script>''' % (self.basePath, self.style),
+            '''		<script src="%s/styles/%s/reveal/js/reveal.js"></script>''' % (self.basePath, self.style),
             '''''',
             '''		<script>''',
             '''''',
@@ -297,12 +300,12 @@ class SlidesObserver(HtmlDocObserver):
             '''''',
             '''				// Optional reveal.js plugins''',
             '''				dependencies: [''',
-            '''					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },''',
-            '''					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''',
-            '''					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''',
-            '''					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },''',
-            '''					{ src: 'plugin/zoom-js/zoom.js', async: true },''',
-            '''					{ src: 'plugin/notes/notes.js', async: true }''',
+            '''					{ src: '%s/styles/%s/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },''' % (self.basePath, self.style),
+            '''					{ src: '%s/styles/%s/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''' % (self.basePath, self.style),
+            '''					{ src: '%s/styles/%s/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''' % (self.basePath, self.style),
+            '''					{ src: '%s/styles/%s/reveal/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },''' % (self.basePath, self.style),
+            '''					{ src: '%s/styles/%s/reveal/plugin/zoom-js/zoom.js', async: true },''' % (self.basePath, self.style),
+            '''					{ src: '%s/styles/%s/reveal/plugin/notes/notes.js', async: true }''' % (self.basePath, self.style),
             '''				]''',
             '''			});''',
             '''''',
@@ -318,27 +321,32 @@ class SlidesObserver(HtmlDocObserver):
         if isinstance(issuer, parser.mdRootDoc):
             HtmlDocObserver.update(self, issuer, event, message)
 
-        if issuer.extraParams:
-            _type = issuer.extraParams.all.get('type')
-            if (_type == 'summary') and (event == 'mino/doc/start'):
-                self.slidesInProgress += 1
-                self.str += '<section>'
+        if event == 'mino/doc/start':
+            if issuer.groupExtraParams:
+                if issuer.groupExtraParams.all.get('type') == 'summary':
+                    self.slidesInProgress += 1
+                    self.str += ' '*4*self.indent + '<section>' + '\n'
+
+            if issuer.extraParams:
+                if issuer.extraParams.all.get('type') == 'summary':
+                    self.slidesInProgress += 1
+                    self.str += ' '*4*self.indent + '<section>'+'\n'
 
         if self.slidesInProgress > 0:
-            if event == 'mino/doc/start':
-                linesBefore = self.functionFactory(issuer, event)[0]
-                self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
-                self.indent += 1
-            elif event == 'mino/doc/stop':
-                self.indent -= 1
-                linesAfter = self.functionFactory(issuer, event)[1]
-                self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
-        
-        if issuer.extraParams:
-            _type = issuer.extraParams.all.get('type')
-            if (_type == 'summary') and (event == 'mino/doc/stop'):
-                self.slidesInProgress -= 1
-                self.str += '</section>'
+            HtmlDocObserver.update(self, issuer, event, message)
+
+        if event == 'mino/doc/start':
+            if issuer.extraParams:
+                if issuer.extraParams.all.get('type') == 'summary':
+                    self.str += ' '*4*self.indent + '</section>'+'\n'
+                    self.slidesInProgress -= 1
+
+        if event == 'mino/doc/stop':
+            if issuer.groupExtraParams:
+                if issuer.groupExtraParams.all.get('type') == 'summary':
+                    self.str += ' '*4*self.indent + '</section>'+'\n'
+                    self.slidesInProgress -= 1
+
 
 
 
