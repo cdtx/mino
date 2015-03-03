@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pdb
 import os, re
 
 from cdtx.mino import parser
@@ -224,7 +223,7 @@ class PdfDocObserver(HtmlDocObserver):
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="%s/styles/%s/pdf.css" />' % (self.basePath, self.style),
+                        '        <link rel="stylesheet" href="file://localhost/%s/styles/%s/pdf.css" />' % (self.basePath, self.style),
                         '    </head>',
                         '    <body>',
                         '        <article>',
@@ -347,7 +346,6 @@ class SlidesObserver(HtmlDocObserver):
         HtmlDocObserver.toFile(self, fileName)
 
     def createHtml(self):
-        pdb.set_trace()
         self.htmlAppend(self.mdRootDoc(None)[0])
 
         for slide in self.slidesList:
