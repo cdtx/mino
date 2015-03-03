@@ -223,7 +223,7 @@ class PdfDocObserver(HtmlDocObserver):
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="%s/styles/%s/pdf.css" />' % (self.basePath, self.style),
+                        '        <link rel="stylesheet" href="file://localhost/%s/styles/%s/pdf.css" />' % (self.basePath, self.style),
                         '    </head>',
                         '    <body>',
                         '        <article>',
