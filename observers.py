@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pdb
 import os, re
 
 from cdtx.mino import parser
@@ -347,7 +346,6 @@ class SlidesObserver(HtmlDocObserver):
         HtmlDocObserver.toFile(self, fileName)
 
     def createHtml(self):
-        pdb.set_trace()
         self.htmlAppend(self.mdRootDoc(None)[0])
 
         for slide in self.slidesList:

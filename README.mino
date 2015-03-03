@@ -38,6 +38,7 @@ MINO documentation
                 Text under item 2.2
             - Item 2.3
                 - Item 2.3.1
+                Text under item 2.3.1
                 
     # Ordered list items
         1. Item 1
@@ -59,6 +60,7 @@ MINO documentation
         | 0 | 0 |
         | 1 | 2 |
         | 2 | 4 |
+        Text under an array
         
     # Bloc of code
         # Bash

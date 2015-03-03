@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pdb
 import sys, os, re, io
 import imp, traceback
 
@@ -81,7 +80,7 @@ class mdElement:
                 return True
             else:
                 if self.acceptList != []:
-                    if type(elem) in self.acceptList:
+                    if elem.__class__ in self.acceptList:
                         return True
                     else:
                         self.opened = False
@@ -264,6 +263,7 @@ class mdList(mdElement):
                 
         mdElement.__init__(self, **kwargs)
         self.opened = True
+        self.acceptList = [self.__class__]
 
         self.childs = [self.newItem(**kwargs)]
            
@@ -271,8 +271,8 @@ class mdList(mdElement):
         # If inline extra params are found here, there are for the listItem, not the list
         pass
 
-    def accept(self, elem):
-        return (isinstance(elem, type(self)) or (self.childs[-1].accept(elem)))
+    # def accept(self, elem):
+    #     return (isinstance(elem, self.__class__) or (self.childs[-1].accept(elem)))
         
     def spread(self, elem):
         return self.childs[-1].spread(elem)
@@ -303,6 +303,7 @@ class mdListItem(mdElement):
                 
         mdElement.__init__(self, **kwargs)
         self.opened = True
+
                
         self.text = self.content.strip()
 
@@ -352,6 +353,7 @@ class mdTable(mdElement):
                 
         mdElement.__init__(self, **kwargs)
         self.opened = True
+        self.acceptList = [self.__class__]
 
         self.childs = [mdTableLine(**kwargs)]
 
@@ -359,8 +361,8 @@ class mdTable(mdElement):
         # If there are inline extraparams, there are for the line, not the table
         pass
 
-    def accept(self, elem):
-        return self.childs[-1].accept(elem)
+    # def accept(self, elem):
+    #     return (isinstance(elem, self.__class__) or (self.childs[-1].accept(elem)))
             
     def spread(self, elem):
         return mdElement.spread(self, elem)
