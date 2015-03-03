@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import pdb
 import os, re
 
 from cdtx.mino import parser
@@ -57,10 +58,11 @@ class HtmlDocObserver:
         return (['<br>'], [])
         
     def mdTitle(self, issuer):
-        before =    [   '    <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
+        before =    [   
+                        '    <div class="minoParagraph%d" %s>' % (self.titleLevel, self.groupExtraParams(issuer)),
+                        '    <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
                         '        %s' % self.htmlReplaceInline(issuer.title),
                         '    </h%d>' % (self.titleLevel),
-                        '    <div class="minoParagraph%d" %s>' % (self.titleLevel, self.groupExtraParams(issuer)),
                     ]
         after =     [   '    </div>',
                     ]
@@ -188,12 +190,15 @@ class HtmlDocObserver:
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
             linesBefore = self.functionFactory(issuer, event)[0]
-            self.str += '\n'.join([(' '*4*self.indent + x) for x in linesBefore]) + '\n'
+            self.htmlAppend(linesBefore)
             self.indent += 1
         elif event == 'mino/doc/stop':
             self.indent -= 1
             linesAfter = self.functionFactory(issuer, event)[1]
-            self.str += '\n'.join([(' '*4*self.indent + x) for x in linesAfter]) + '\n'
+            self.htmlAppend(linesAfter)
+
+    def htmlAppend(self, lst):
+        self.str += '\n'.join([(' '*4*self.indent + x) for x in lst]) + '\n'
 
     def htmlReplaceInline(self, content):
         repl = {'bold':r'<strong>\1</strong>',
@@ -246,6 +251,7 @@ class SlidesObserver(HtmlDocObserver):
     '''
     def __init__(self):
         HtmlDocObserver.__init__(self)
+        self.slidesList = [] 
         self.slidesInProgress = 0
 
     def mdRootDoc(self, issuer):
@@ -318,34 +324,57 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def update(self, issuer, event, message):
-        if isinstance(issuer, parser.mdRootDoc):
-            HtmlDocObserver.update(self, issuer, event, message)
-
+        # Here in the update method, we only build a list of elements that will participate in the slide set
         if event == 'mino/doc/start':
-            if issuer.groupExtraParams:
-                if issuer.groupExtraParams.all.get('type') == 'summary':
-                    self.slidesInProgress += 1
-                    self.str += ' '*4*self.indent + '<section>' + '\n'
+            if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
+                 (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
 
-            if issuer.extraParams:
-                if issuer.extraParams.all.get('type') == 'summary':
-                    self.slidesInProgress += 1
-                    self.str += ' '*4*self.indent + '<section>'+'\n'
-
-        if self.slidesInProgress > 0:
-            HtmlDocObserver.update(self, issuer, event, message)
-
-        if event == 'mino/doc/start':
-            if issuer.extraParams:
-                if issuer.extraParams.all.get('type') == 'summary':
-                    self.str += ' '*4*self.indent + '</section>'+'\n'
-                    self.slidesInProgress -= 1
+                if self.slidesInProgress == 0:
+                    self.slidesInProgress = 1
+                    self.slidesList.append([issuer, []])
+                elif self.slidesInProgress == 1:
+                    self.slidesList[-1][1].append(issuer)
+                else:
+                    print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+                
 
         if event == 'mino/doc/stop':
-            if issuer.groupExtraParams:
-                if issuer.groupExtraParams.all.get('type') == 'summary':
-                    self.str += ' '*4*self.indent + '</section>'+'\n'
-                    self.slidesInProgress -= 1
+            if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
+                    self.slidesInProgress = 0
+
+    def toFile(self, fileName):
+        self.createHtml()
+        HtmlDocObserver.toFile(self, fileName)
+
+    def createHtml(self):
+        pdb.set_trace()
+        self.htmlAppend(self.mdRootDoc(None)[0])
+
+        for slide in self.slidesList:
+            if slide[1] == []:
+                # There is no subslide, so create only one <section> level
+                self.htmlAppend(['<section>'])
+                self.recursiveDoc(slide[0])
+                self.htmlAppend(['</section>'])
+            else:
+                # The root element is only used for delimiting the section
+                self.htmlAppend(['<section>'])
+                
+                for sub in slide[1]:
+                    self.htmlAppend(['<section>'])
+                    self.recursiveDoc(sub)
+                    self.htmlAppend(['</section>'])
+
+                self.htmlAppend(['</section>'])
+        
+        self.htmlAppend(self.mdRootDoc(None)[1])
+
+    def recursiveDoc(self, elem):
+        self.htmlAppend(self.functionFactory(elem, 'mino/doc/start')[0])
+        for sub in elem.childs:
+            self.recursiveDoc(sub)
+        self.htmlAppend(self.functionFactory(elem, 'mino/doc/stop')[1])
+
 
 
 

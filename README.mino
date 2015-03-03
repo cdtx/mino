@@ -6,34 +6,27 @@ MINO documentation
         color:blue; margin-left:100px]
     This paper is aimed to be like a full example of what the mino parser can do
     It should be consistant with the syntax accross dev branches.
-    
-    [type=summary,name=before_title]
-    # Titles
-        [type=summary]
+
+    # Titles                
         # Title 1
             Paragraph under the title 1
             # Title 1.1
                 Paragraph under the title 1.1
             # Title 1.2
                 Paragraph under the title 1.2
-        [type=summary]
         # Title 2
             Paragraph under the title 2
             # Title 2.1
                 Paragraph under the title 2.1
                 
-    [type=summary]
     # Lorem ipsum
-    [type=summary]
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
 
 
 
-    [type=summary]
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
 
 
-    [type=summary, name=before_title_2]
     # Unordered list items
         [ul_item=1]
         - Item 1
@@ -60,7 +53,6 @@ MINO documentation
     <a href="http://google.fr">Go to Google</a>
 
                 
-    [type=summary]
     # Table
         f(x) = 2x
         | x | y |       [line=red]
@@ -96,7 +88,6 @@ MINO documentation
     # Link
         !(https://github.com/cdtx/mino)(Fork me on GitHub)
     
-    [type=summary]
     # Image
         !!(http://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/200px-Tux.svg.png)(Tux)
         
@@ -121,4 +112,35 @@ MINO documentation
 
             self.append(l)
         }_
+
+    # Summary
+        
+        [type=summary]
+        # Simple page
+            That chapter contains a very simple summary that fits on one slide
+
+        [type=summary]
+        # Second simple page
+            That chapter contains a very simple summary that fits on one slide
+
+        [type=summary]
+        # Complex slide set
+            
+            [type=summary]
+            # Here it's the first slide of the set
+                It contains content like :
+                    - a
+                    - b
+                    - c
+            [type=summary]
+            # And here is the second
+                It also contains stuffs such as :
+                    x*x
+                    | x | y |
+                    | 0 | 0 |
+                    | 1 | 1 |
+                    | 2 | 4 |
+                    | 3 | 9 |
+
+
 
