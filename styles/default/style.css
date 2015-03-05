@@ -1,6 +1,6 @@
 body {
-    margin-left: 5%;
-    margin-right: 5%;
+    margin-left: 1px;
+    margin-right: 1px;
     font-family: "Courier New", Courier, monospace;
 }
 
@@ -13,9 +13,6 @@ strong, b {
 
 
 header div{
-    width: 100%;
-    height: 5em;
-    background-image: url('banner.svg');
     background-size: 100%;
 }
 
