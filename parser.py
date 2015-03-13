@@ -3,8 +3,6 @@
 import sys, os, re, io
 import imp, traceback
 
-# from xhtml2pdf import pisa
-
 from patterns import Borg
 
 class subject(Borg):
@@ -566,4 +564,8 @@ if __name__ == '__main__':
     else:
         usage()
         
+
+
+
+
 

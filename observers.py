@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, re
+from copy import copy
 
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
@@ -10,12 +11,63 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 import weasyprint
 
-class DumbObserver:
+class mdFilter(object):
+    def __init__(self, pattern, splitSymbol='/'):
+        self.splitSymbol = splitSymbol
+        self.pattern = pattern.split(self.splitSymbol)
+        self.currentElements = []
+
     def update(self, issuer, event, message):
+        if event == 'mino/doc/start':
+            self.currentElements.append(issuer)
+        elif event == 'mino/doc/stop':
+            self.currentElements.pop()
+
+    def test(self, issuer, event, message):
+        # Every call to update will have build a list of current elements
+        # hierarchy. The aim of the test will be to build a regex from this
+        # list, that will be evaluated against the filter
+
+        # Build the regex (based on the class names so far)
+        currentPattern = self.splitSymbol.join([str(x.__class__).split('.')[-1] for x in self.currentElements])
+        print currentPattern
+
+class filterableObserver(object):
+    '''
+        This is the base class for an observer that manages filters.
+        It can be added acceptObservers, each evaluated and OR'ed
+    '''
+    def __init__(self):
+        self.acceptFilters = []
+
+    def addAcceptFilter(self, pattern, splitSymbol='/'):
+        self.acceptFilters.append(mdFilter(pattern, splitSymbol))
+
+    def update(self, issuer, event, message):
+        if isinstance(issuer, parser.mdRootDoc):
+            return
+        for f in self.acceptFilters:
+            f.update(issuer, event, message)
+
+    def accept(self, issuer, event, message):
+        if isinstance(issuer, parser.mdRootDoc):
+            return True
+        for f in self.acceptFilters:
+            if f.test(issuer, event, message):
+                return True
+        
+
+class DumbObserver(filterableObserver):
+    def __init__(self, **kwargs):
+        filterableObserver.__init__(self)
+
+    def update(self, issuer, event, message):
+        super(DumbObserver, self).update(issuer, event, message)
         print issuer, event, message
         
-class HtmlDocObserver:
+class HtmlDocObserver(filterableObserver):
     def __init__(self):
+        filterableObserver.__init__(self)
         self.indent = 0
         self.titleLevel = 1
         self.style = 'default'
@@ -187,6 +239,9 @@ class HtmlDocObserver:
             raise Exception('Unknown element [%s]' % str(issuer))
     
     def update(self, issuer, event, message):
+        super(HtmlDocObserver, self).update(issuer, event, message)
+        if not filterableObserver.accept(self, issuer, event, message):
+            return
         if event == 'mino/doc/start':
             linesBefore = self.functionFactory(issuer, event)[0]
             self.htmlAppend(linesBefore)
@@ -323,6 +378,7 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def update(self, issuer, event, message):
+        super(PdfDocObserver, self).update(issuer, event, message)
         # Here in the update method, we only build a list of elements that will participate in the slide set
         if event == 'mino/doc/start':
             if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
