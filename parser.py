@@ -197,6 +197,7 @@ class mdTitle(mdElement):
 
         mdElement.__init__(self, **kwargs)
                
+        self.content = self.content.strip()
         self.title = self.content
 
 class mdDocumentTitle(mdTitle):

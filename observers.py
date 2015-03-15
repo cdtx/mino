@@ -14,7 +14,7 @@ import weasyprint
 class mdFilter(object):
     def __init__(self, pattern, splitSymbol='/'):
         self.splitSymbol = splitSymbol
-        self.pattern = pattern.split(self.splitSymbol)
+        self.pattern = pattern
         self.currentElements = []
 
     def update(self, issuer, event, message):
@@ -29,8 +29,17 @@ class mdFilter(object):
         # list, that will be evaluated against the filter
 
         # Build the regex (based on the class names so far)
-        currentPattern = self.splitSymbol.join([str(x.__class__).split('.')[-1] for x in self.currentElements])
-        print currentPattern
+        elementPattern = self.splitSymbol.join([self.elementSubPattern(x) for x in self.currentElements])
+        print elementPattern
+        return bool(re.match(self.pattern, elementPattern))
+
+    def elementSubPattern(self, issuer):
+        classDesc = str(issuer.__class__).split('.')[-1]
+        return classDesc
+        # if isinstance(issuer, parser.mdTitle):
+        #     return r'(%s|%s)' % (classDesc, issuer.content.lower())
+        # else:
+        #     return r'%s' % (classDesc)
 
 class filterableObserver(object):
     '''
