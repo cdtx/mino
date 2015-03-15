@@ -30,16 +30,14 @@ class mdFilter(object):
 
         # Build the regex (based on the class names so far)
         elementPattern = self.splitSymbol.join([self.elementSubPattern(x) for x in self.currentElements])
-        print elementPattern
-        return bool(re.match(self.pattern, elementPattern))
+        return bool(re.search(self.pattern, elementPattern))
 
     def elementSubPattern(self, issuer):
         classDesc = str(issuer.__class__).split('.')[-1]
-        return classDesc
-        # if isinstance(issuer, parser.mdTitle):
-        #     return r'(%s|%s)' % (classDesc, issuer.content.lower())
-        # else:
-        #     return r'%s' % (classDesc)
+        if isinstance(issuer, parser.mdTitle):
+            return r'%s' % (issuer.content.lower())
+        else:
+            return r'%s' % (classDesc)
 
 class filterableObserver(object):
     '''
@@ -61,6 +59,10 @@ class filterableObserver(object):
     def accept(self, issuer, event, message):
         if isinstance(issuer, parser.mdRootDoc):
             return True
+        # An empty acceptFilter list means we accept everything
+        if self.acceptFilters == []:
+            return True
+
         for f in self.acceptFilters:
             if f.test(issuer, event, message):
                 return True
@@ -248,8 +250,12 @@ class HtmlDocObserver(filterableObserver):
             raise Exception('Unknown element [%s]' % str(issuer))
     
     def update(self, issuer, event, message):
-        super(HtmlDocObserver, self).update(issuer, event, message)
+        if event == 'mino/doc/start':
+            super(HtmlDocObserver, self).update(issuer, event, message)
+
         if not filterableObserver.accept(self, issuer, event, message):
+            if event == 'mino/doc/stop':
+                super(HtmlDocObserver, self).update(issuer, event, message)
             return
         if event == 'mino/doc/start':
             linesBefore = self.functionFactory(issuer, event)[0]
@@ -259,6 +265,9 @@ class HtmlDocObserver(filterableObserver):
             self.indent -= 1
             linesAfter = self.functionFactory(issuer, event)[1]
             self.htmlAppend(linesAfter)
+
+        if event == 'mino/doc/stop':
+            super(HtmlDocObserver, self).update(issuer, event, message)
 
     def htmlAppend(self, lst):
         self.str += '\n'.join([(' '*4*self.indent + x) for x in lst]) + '\n'
@@ -387,8 +396,15 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def update(self, issuer, event, message):
-        super(PdfDocObserver, self).update(issuer, event, message)
+        if event == 'mino/doc/start':
+            filterableObserver.update(self, issuer, event, message)
+
+        if not filterableObserver.accept(self, issuer, event, message):
+            if event == 'mino/doc/stop':
+                filterableObserver.update(self, issuer, event, message)
+            return
         # Here in the update method, we only build a list of elements that will participate in the slide set
+        print issuer
         if event == 'mino/doc/start':
             if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
                  (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
@@ -405,6 +421,9 @@ class SlidesObserver(HtmlDocObserver):
         if event == 'mino/doc/stop':
             if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
                     self.slidesInProgress = 0
+
+        if event == 'mino/doc/stop':
+            filterableObserver.update(self, issuer, event, message)
 
     def toFile(self, fileName):
         self.createHtml()
