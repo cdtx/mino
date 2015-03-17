@@ -95,6 +95,16 @@ MINO documentation
                     f()
             ```
     [type=summary]
+    # Graph
+        _{ graphviz
+            digraph {
+                A->B->C
+            }
+        }_
+
+
+
+    [type=summary]
     # UML
         _{ plantuml
                 class A 

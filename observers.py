@@ -404,7 +404,6 @@ class SlidesObserver(HtmlDocObserver):
                 filterableObserver.update(self, issuer, event, message)
             return
         # Here in the update method, we only build a list of elements that will participate in the slide set
-        print issuer
         if event == 'mino/doc/start':
             if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
                  (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):

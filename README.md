@@ -22,3 +22,5 @@ Output formats can be :
 - weasyprint (for pdf output)
 - pygments (for source syntax coloring)
 - Reveal.js
+- plantuml python package (for plantuml plugin)
+- pydot2 python package, and graphviz installed (for graphviz plugin)
