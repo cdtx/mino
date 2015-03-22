@@ -1,15 +1,14 @@
 #! /usr/bin/env python
 import os
 import pickle
-from argparse import ArgumentParser
+import argparse
 
 
 class manager(object):
     def __init__(self):
-        self.remotes = []
+        self.remotes = {}
 
     def addNote(self):
-        self.remotes.append('a')
         pass
 
 
@@ -45,19 +44,52 @@ def db_close(mgr):
     pass
 
 
-if __name__ == '__main__':
-    actionList = ['note', 'todo', 'remote']
+def call_note(mgr, args):
+    pass
 
-    parser = ArgumentParser()
-    parser.add_argument(dest='target', type=str, choices=actionList)
+def call_remote(mgr, args):
+    if args.action == 'add': 
+        if not args.path:
+            raise Exception('Give the path you want to add with --path')
+        mgr.remotes.append(args.path)
+    if args.action == 'remove': 
+        if not args.path:
+            raise Exception('Give the path you want to remove with --path')
+        mgr.remotes.remove(args.path)
+    elif args.action == 'list':
+        print mgr.remotes
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+                description='Command line interface for powerfull notes and todos managment',        
+            
+    )
+    subparsers = parser.add_subparsers()
+
+    # The note parser
+    parser_note = subparsers.add_parser('note')
+    parser_note.add_argument(dest='action', type=str, choices=['add'])
+    # Remember which function to call after the parsing is done (tip given by python.org)
+    parser_note.set_defaults(func=call_note)
+
+
+    # The remote parser
+    parser_remote = subparsers.add_parser('remote')
+    parser_remote.add_argument(dest='action', type=str, choices=['add', 'remove', 'list'])
+    parser_remote.add_argument('--path', type=str)
+    parser_remote.set_defaults(func=call_remote)
+
+    
+    # Open the database
+    mgr = db_open()
+    #-----------------------------------
 
     args = parser.parse_args()
-    
-    mgr = db_open()
+    args.func(mgr, args)
 
-    mgr.addNote()
-
-
+    #-----------------------------------
+    # Save and close the database
     db_save(mgr)
     db_close(mgr)
 
