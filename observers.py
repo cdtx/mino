@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, re
+from copy import copy
 
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
@@ -10,12 +11,74 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 import weasyprint
 
-class DumbObserver:
+class mdFilter(object):
+    def __init__(self, pattern, splitSymbol='/'):
+        self.splitSymbol = splitSymbol
+        self.pattern = pattern
+        self.currentElements = []
+
     def update(self, issuer, event, message):
+        if event == 'mino/doc/start':
+            self.currentElements.append(issuer)
+        elif event == 'mino/doc/stop':
+            self.currentElements.pop()
+
+    def test(self, issuer, event, message):
+        # Every call to update will have build a list of current elements
+        # hierarchy. The aim of the test will be to build a regex from this
+        # list, that will be evaluated against the filter
+
+        # Build the regex (based on the class names so far)
+        elementPattern = self.splitSymbol.join([self.elementSubPattern(x) for x in self.currentElements])
+        return bool(re.search(self.pattern, elementPattern))
+
+    def elementSubPattern(self, issuer):
+        classDesc = str(issuer.__class__).split('.')[-1]
+        if isinstance(issuer, parser.mdTitle):
+            return r'%s' % (issuer.content.lower())
+        else:
+            return r'%s' % (classDesc)
+
+class filterableObserver(object):
+    '''
+        This is the base class for an observer that manages filters.
+        It can be added acceptObservers, each evaluated and OR'ed
+    '''
+    def __init__(self):
+        self.acceptFilters = []
+
+    def addAcceptFilter(self, pattern, splitSymbol='/'):
+        self.acceptFilters.append(mdFilter(pattern, splitSymbol))
+
+    def update(self, issuer, event, message):
+        if isinstance(issuer, parser.mdRootDoc):
+            return
+        for f in self.acceptFilters:
+            f.update(issuer, event, message)
+
+    def accept(self, issuer, event, message):
+        if isinstance(issuer, parser.mdRootDoc):
+            return True
+        # An empty acceptFilter list means we accept everything
+        if self.acceptFilters == []:
+            return True
+
+        for f in self.acceptFilters:
+            if f.test(issuer, event, message):
+                return True
+        
+
+class DumbObserver(filterableObserver):
+    def __init__(self, **kwargs):
+        filterableObserver.__init__(self)
+
+    def update(self, issuer, event, message):
+        super(DumbObserver, self).update(issuer, event, message)
         print issuer, event, message
         
-class HtmlDocObserver:
+class HtmlDocObserver(filterableObserver):
     def __init__(self):
+        filterableObserver.__init__(self)
         self.indent = 0
         self.titleLevel = 1
         self.style = 'default'
@@ -188,6 +251,13 @@ class HtmlDocObserver:
     
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
+            super(HtmlDocObserver, self).update(issuer, event, message)
+
+        if not filterableObserver.accept(self, issuer, event, message):
+            if event == 'mino/doc/stop':
+                super(HtmlDocObserver, self).update(issuer, event, message)
+            return
+        if event == 'mino/doc/start':
             linesBefore = self.functionFactory(issuer, event)[0]
             self.htmlAppend(linesBefore)
             self.indent += 1
@@ -195,6 +265,9 @@ class HtmlDocObserver:
             self.indent -= 1
             linesAfter = self.functionFactory(issuer, event)[1]
             self.htmlAppend(linesAfter)
+
+        if event == 'mino/doc/stop':
+            super(HtmlDocObserver, self).update(issuer, event, message)
 
     def htmlAppend(self, lst):
         self.str += '\n'.join([(' '*4*self.indent + x) for x in lst]) + '\n'
@@ -323,6 +396,13 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def update(self, issuer, event, message):
+        if event == 'mino/doc/start':
+            filterableObserver.update(self, issuer, event, message)
+
+        if not filterableObserver.accept(self, issuer, event, message):
+            if event == 'mino/doc/stop':
+                filterableObserver.update(self, issuer, event, message)
+            return
         # Here in the update method, we only build a list of elements that will participate in the slide set
         if event == 'mino/doc/start':
             if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
@@ -340,6 +420,9 @@ class SlidesObserver(HtmlDocObserver):
         if event == 'mino/doc/stop':
             if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
                     self.slidesInProgress = 0
+
+        if event == 'mino/doc/stop':
+            filterableObserver.update(self, issuer, event, message)
 
     def toFile(self, fileName):
         self.createHtml()

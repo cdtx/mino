@@ -3,8 +3,6 @@
 import sys, os, re, io
 import imp, traceback
 
-# from xhtml2pdf import pisa
-
 from patterns import Borg
 
 class subject(Borg):
@@ -199,6 +197,7 @@ class mdTitle(mdElement):
 
         mdElement.__init__(self, **kwargs)
                
+        self.content = self.content.strip()
         self.title = self.content
 
 class mdDocumentTitle(mdTitle):
@@ -566,4 +565,8 @@ if __name__ == '__main__':
     else:
         usage()
         
+
+
+
+
 
