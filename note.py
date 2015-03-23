@@ -24,11 +24,15 @@ class manager(object):
 class note(object):
     def __init__(self, filePath):
         self.filePath = filePath
-        self.cksum = self.getHash()
+        self.words = set()  # In case it's requested before update...
+        self.cksum = 0
         
     def update(self):
         if self.cksum != self.getHash():
             # Do long update stuff here
+            with open(self.filePath, 'r') as file:
+                self.words = set(file.read().split())
+
             self.cksum = self.getHash()
 
     def getHash(self):
