@@ -6,7 +6,7 @@ import argparse
 
 class manager(object):
     def __init__(self):
-        self.remotes = {}
+        self.remotes = set()
 
     def addNote(self):
         pass
@@ -25,20 +25,26 @@ def db_open():
         raise Exception('Cannot locate database, set MINO_DATABASE_PATH before')
     
     # Does the database exist
-    if not os.path.exists(os.environ['MINO_DATABASE_PATH']):
+    if not os.path.exists(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes')):
         print 'Database not found, create one'
         mgr = manager()
     else:
         print 'Database found at %s, open it' % os.environ['MINO_DATABASE_PATH']
-        with open(os.environ['MINO_DATABASE_PATH'], 'r') as file:
+        with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes'), 'r') as file:
             mgr = pickle.load(file)
+
+    if os.path.exists(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes')): 
+        with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes'), 'r') as file:
+            mgr.remotes = pickle.load(file)
+
 
     return mgr
 
 def db_save(mgr):
-    with open(os.environ['MINO_DATABASE_PATH'], 'w') as file:
+    with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes'), 'w') as file:
         pickle.dump(mgr, file)
-    pass
+    with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes'), 'w') as file:
+        pickle.dump(mgr.remotes, file)
 
 def db_close(mgr):
     pass
@@ -51,11 +57,11 @@ def call_remote(mgr, args):
     if args.action == 'add': 
         if not args.path:
             raise Exception('Give the path you want to add with --path')
-        mgr.remotes.append(args.path)
+        mgr.remotes.add(os.path.realpath(args.path))
     if args.action == 'remove': 
         if not args.path:
             raise Exception('Give the path you want to remove with --path')
-        mgr.remotes.remove(args.path)
+        mgr.remotes.remove(os.path.realpath(args.path))
     elif args.action == 'list':
         print mgr.remotes
 
