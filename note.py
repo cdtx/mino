@@ -69,23 +69,32 @@ def db_close(mgr):
     pass
 
 
-def call_note(mgr, args):
+
+def call_add(mgr, args):
     pass
 
-def call_remote(mgr, args):
-    if args.action == 'add': 
-        if not args.path:
-            raise Exception('Give the path you want to add with --path')
-        mgr.remotes.add(os.path.realpath(args.path))
-    if args.action == 'remove': 
-        if not args.path:
-            raise Exception('Give the path you want to remove with --path')
-        mgr.remotes.remove(os.path.realpath(args.path))
-    elif args.action == 'list':
-        print mgr.remotes
+def call_remove(mgr, args):
+    pass
 
-def call_update(mgr, args):
-     mgr.update()
+def call_list(mgr, args):
+    pass
+
+def call_search(mgr, args):
+    pass
+
+def call_remote_add(mgr, args):
+    if not args.path:
+        raise Exception('Give the path you want to add with --path')
+    mgr.remotes.add(os.path.realpath(args.path))
+
+def call_remote_remove(mgr, args):
+    if not args.path:
+        raise Exception('Give the path you want to remove with --path')
+    mgr.remotes.remove(os.path.realpath(args.path))
+
+def call_remote_list(mgr, args):
+    print '\n'.join(x for x in mgr.remotes)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -94,22 +103,32 @@ if __name__ == '__main__':
     )
     subparsers = parser.add_subparsers()
 
-    # The note parser
-    parser_note = subparsers.add_parser('note')
-    parser_note.add_argument(dest='action', type=str, choices=['add'])
-    # Remember which function to call after the parsing is done (tip given by python.org)
-    parser_note.set_defaults(func=call_note)
+    parser_add = subparsers.add_parser('add')
+    # Store which function to call after the parsing is done (tip given by python.org)
+    parser_add.set_defaults(func=call_add)
 
+    parser_remove = subparsers.add_parser('remove')
+    parser_remove.set_defaults(func=call_remove)
+
+    parser_list = subparsers.add_parser('list')
+    parser_list.set_defaults(func=call_list)
+
+    parser_search = subparsers.add_parser('search')
+    parser_search.set_defaults(func=call_search)
 
     # The remote parser
     parser_remote = subparsers.add_parser('remote')
-    parser_remote.add_argument(dest='action', type=str, choices=['add', 'remove', 'list'])
-    parser_remote.add_argument('--path', type=str)
-    parser_remote.set_defaults(func=call_remote)
+    subparsers_remote = parser_remote.add_subparsers()
 
-    parser_remote = subparsers.add_parser('update')
-    parser_remote.set_defaults(func=call_update)
-    
+    parser_remote_add = subparsers_remote.add_parser('add')
+    parser_remote_add.set_defaults(func=call_remote_add)
+
+    parser_remote_remove = subparsers_remote.add_parser('remove')
+    parser_remote_remove.set_defaults(func=call_remote_remove)
+
+    parser_remote_list = subparsers_remote.add_parser('list')
+    parser_remote_list.set_defaults(func=call_remote_list)
+
     # Open the database
     mgr = db_open()
     #-----------------------------------
