@@ -8,23 +8,31 @@ from glob import glob
 
 class manager(object):
     def __init__(self):
+        self.notes = {}
         self.remotes = set()
 
     def update(self):
         for r in self.remotes:
             for f in glob(os.path.join(r, '*.mino')):
-                self.addNote(note(f))
+                n = self.notes.get(f)
+                if not n:
+                    self.notes[f] = note(f)
+                else:
+                    n.update()
 
-    def addNote(self, aNote):
-        print aNote
 
 class note(object):
     def __init__(self, filePath):
         self.filePath = filePath
-        self.cksum = self.hashfile(self.filePath)
+        self.cksum = self.getHash()
         
-    def hashfile(self, aFilePath):
-        with open(aFilePath, 'rb') as file:
+    def update(self):
+        if self.cksum != self.getHash():
+            # Do long update stuff here
+            self.cksum = self.getHash()
+
+    def getHash(self):
+        with open(self.filePath, 'rb') as file:
             hasher = hashlib.sha256()
             buf = file.read(65536)
             while len(buf) > 0:
@@ -45,12 +53,10 @@ def db_open():
         raise Exception('Cannot locate database, set MINO_DATABASE_PATH before')
     
     # Does the database exist
-    if not os.path.exists(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes')):
-        print 'Database not found, create one'
-        mgr = manager()
-    else:
+    mgr = manager()
+    if os.path.exists(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes')):
         with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes'), 'r') as file:
-            mgr = pickle.load(file)
+            mgr.notes = pickle.load(file)
 
     if os.path.exists(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes')): 
         with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes'), 'r') as file:
@@ -61,7 +67,7 @@ def db_open():
 
 def db_save(mgr):
     with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes'), 'w') as file:
-        pickle.dump(mgr, file)
+        pickle.dump(mgr.notes, file)
     with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes'), 'w') as file:
         pickle.dump(mgr.remotes, file)
 
@@ -131,6 +137,7 @@ if __name__ == '__main__':
 
     # Open the database
     mgr = db_open()
+    mgr.update()
     #-----------------------------------
 
     args = parser.parse_args()
