@@ -2,19 +2,39 @@
 import os
 import pickle
 import argparse
+import hashlib
+from glob import glob
 
 
 class manager(object):
     def __init__(self):
         self.remotes = set()
 
-    def addNote(self):
-        pass
+    def update(self):
+        for r in self.remotes:
+            for f in glob(os.path.join(r, '*.mino')):
+                self.addNote(note(f))
 
+    def addNote(self, aNote):
+        print aNote
 
 class note(object):
-    def __init__(self):
-        fileName = ''
+    def __init__(self, filePath):
+        self.filePath = filePath
+        self.cksum = self.hashfile(self.filePath)
+        
+    def hashfile(self, aFilePath):
+        with open(aFilePath, 'rb') as file:
+            hasher = hashlib.sha256()
+            buf = file.read(65536)
+            while len(buf) > 0:
+                hasher.update(buf)
+                buf = file.read(65536)
+            return hasher.digest()
+
+    def __str__(self):
+        str = '%s - %s' % (self.filePath, self.cksum)
+        return str
 
 class todo(note):
     pass
@@ -29,7 +49,6 @@ def db_open():
         print 'Database not found, create one'
         mgr = manager()
     else:
-        print 'Database found at %s, open it' % os.environ['MINO_DATABASE_PATH']
         with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes'), 'r') as file:
             mgr = pickle.load(file)
 
@@ -37,8 +56,8 @@ def db_open():
         with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbRemotes'), 'r') as file:
             mgr.remotes = pickle.load(file)
 
-
     return mgr
+
 
 def db_save(mgr):
     with open(os.path.join(os.environ['MINO_DATABASE_PATH'], 'dbNotes'), 'w') as file:
@@ -65,6 +84,8 @@ def call_remote(mgr, args):
     elif args.action == 'list':
         print mgr.remotes
 
+def call_update(mgr, args):
+     mgr.update()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -86,6 +107,8 @@ if __name__ == '__main__':
     parser_remote.add_argument('--path', type=str)
     parser_remote.set_defaults(func=call_remote)
 
+    parser_remote = subparsers.add_parser('update')
+    parser_remote.set_defaults(func=call_update)
     
     # Open the database
     mgr = db_open()
