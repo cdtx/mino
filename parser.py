@@ -33,6 +33,9 @@ class subject(Borg):
         for obs in self.observers:
             obs.update(issuer, event, message)
 
+def addObserver(obs):
+    subject().addObserver(obs)
+
 def log(issuer=None, event='', message=''):
     subject().update(issuer, event, message)
 
@@ -495,23 +498,23 @@ class mdImage(mdLink):
 linePatterns = (
     # Regex, flags, description
     # mino elements
-    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE | re.DOTALL, mdExtraParams),
-    (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, mdDocumentTitle),
-    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdTitle),
-    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdUnorderedList),
-    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdOrderedList),
-    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdTable),
-    (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, mdBlocOfCode),
-    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdLink),
-    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdImage),
+    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?(\n|$)', re.IGNORECASE | re.DOTALL, mdExtraParams),
+    (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?(\n|$)', re.IGNORECASE, mdDocumentTitle),
+    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdTitle),
+    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdUnorderedList),
+    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdOrderedList),
+    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdTable),
+    (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?(\n|$)', re.IGNORECASE | re.DOTALL, mdBlocOfCode),
+    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdLink),
+    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdImage),
     # (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Include'),
     
     # Plugin
-    (r'(?P<indent>[\t ]*)_\{ *(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, mdPlugin),
+    (r'(?P<indent>[\t ]*)_\{ *(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?(\n|$)', re.IGNORECASE | re.DOTALL, mdPlugin),
     
     # Decorative lines
-    (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?\n', re.IGNORECASE, mdTextLine),
-    (r'(?P<indent>)([\t ]*)\r?\n?', re.IGNORECASE, mdEmptyLine),
+    (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?(\n|$)', re.IGNORECASE, mdTextLine),
+    (r'(?P<indent>)([\t ]*)\r?(\n|$)', re.IGNORECASE, mdEmptyLine),
 )
     
 inlinePatterns = (
