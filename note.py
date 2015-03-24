@@ -135,6 +135,7 @@ if __name__ == '__main__':
     parser_remote_add.set_defaults(func=call_remote_add)
 
     parser_remote_remove = subparsers_remote.add_parser('remove')
+    parser_remote_remove.add_argument('path', type=str)
     parser_remote_remove.set_defaults(func=call_remote_remove)
 
     parser_remote_list = subparsers_remote.add_parser('list')
