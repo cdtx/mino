@@ -4,12 +4,15 @@ import pickle
 import argparse
 import hashlib
 from glob import glob
+from patterns import Borg
+import parser
 
 
 class manager(object):
     def __init__(self):
         self.notes = {}
         self.remotes = set()
+        parser.addObserver(keyWordsObserver())
 
     def update(self):
         for r in self.remotes:
@@ -19,7 +22,14 @@ class manager(object):
                     self.notes[f] = note(f)
                 else:
                     n.update()
+class keyWordsObserver(Borg):
+    def update(self, issuer, event, message):
+        if event == 'mino/doc/start':
+            if isinstance(issuer, parser.mdTitle):
+                self.tgt.update(set(issuer.content.lower().split()))
 
+    def setTarget(self, tgt):
+        self.tgt = tgt
 
 class note(object):
     def __init__(self, filePath):
@@ -28,12 +38,17 @@ class note(object):
         self.cksum = 0
         
     def update(self):
+        # Update the note if it has changed
         if self.cksum != self.getHash():
             # Do long update stuff here
-            with open(self.filePath, 'r') as file:
-                self.words = set(file.read().split())
+            try:
+                doc = parser.load(self.filePath)
+                keyWordsObserver().setTarget(self.words)
+                doc.doc()
+                self.cksum = self.getHash()
+            except:
+                print 'Failed parsing %s' % self.filePath
 
-            self.cksum = self.getHash()
 
     def getHash(self):
         with open(self.filePath, 'rb') as file:
@@ -107,11 +122,11 @@ def call_remote_list(mgr, args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
+    arg_parser = argparse.ArgumentParser(
                 description='Command line interface for powerfull notes and todos managment',        
             
     )
-    subparsers = parser.add_subparsers()
+    subparsers = arg_parser.add_subparsers()
 
     parser_add = subparsers.add_parser('add')
     # Store which function to call after the parsing is done (tip given by python.org)
@@ -146,7 +161,7 @@ if __name__ == '__main__':
     mgr.update()
     #-----------------------------------
 
-    args = parser.parse_args()
+    args = arg_parser.parse_args()
     args.func(mgr, args)
 
     #-----------------------------------
