@@ -115,7 +115,7 @@ def call_remove(mgr, args):
     pass
 
 def call_list(mgr, args):
-    print '\n  '.join(f for f in mgr.notes.keys())
+    print '\n'.join(f for f in mgr.notes.keys())
 
 def call_search(mgr, args):
     pass
