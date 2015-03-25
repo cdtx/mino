@@ -6,6 +6,7 @@ import hashlib
 from glob import glob
 from patterns import Borg
 import parser
+import traceback
 
 
 class manager(object):
@@ -40,6 +41,7 @@ class note(object):
     def update(self):
         # Update the note if it has changed
         if self.cksum != self.getHash():
+            print '%s has changed, update it\'s metadata' % self.filePath
             # Do long update stuff here
             try:
                 doc = parser.load(self.filePath)
@@ -48,6 +50,7 @@ class note(object):
                 self.cksum = self.getHash()
             except:
                 print 'Failed parsing %s' % self.filePath
+                print traceback.format_exc()
 
 
     def getHash(self):
