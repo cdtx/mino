@@ -25,8 +25,7 @@ class manager(object):
                     n.update()
 
     def flush(self):
-        for n in self.notes.values():
-            n.flush()
+        self.notes.clear()
 
 class keyWordsObserver(Borg):
     def update(self, issuer, event, message):
@@ -42,6 +41,7 @@ class note(object):
         self.filePath = filePath
         self.words = set()  # In case it's requested before update...
         self.cksum = 0
+        self.update()
         
     def update(self):
         # Update the note if it has changed
@@ -56,10 +56,6 @@ class note(object):
             except:
                 print 'Failed parsing %s' % self.filePath
                 print traceback.format_exc()
-
-    def flush(self):
-        self.words = set()
-        self.cksum = 0
 
     def getHash(self):
         with open(self.filePath, 'rb') as file:
