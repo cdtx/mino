@@ -23,6 +23,11 @@ class manager(object):
                     self.notes[f] = note(f)
                 else:
                     n.update()
+
+    def flush(self):
+        for n in self.notes.values():
+            n.flush()
+
 class keyWordsObserver(Borg):
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
@@ -52,6 +57,9 @@ class note(object):
                 print 'Failed parsing %s' % self.filePath
                 print traceback.format_exc()
 
+    def flush(self):
+        self.words = set()
+        self.cksum = 0
 
     def getHash(self):
         with open(self.filePath, 'rb') as file:
@@ -97,6 +105,10 @@ def db_close(mgr):
     pass
 
 
+def call_update(mgr, args):
+    if args.force:
+        mgr.flush()
+    mgr.update()
 
 def call_add(mgr, args):
     pass
@@ -112,12 +124,12 @@ def call_search(mgr, args):
 
 def call_remote_add(mgr, args):
     if not args.path:
-        raise Exception('Give the path you want to add with --path')
+        raise Exception('Give the path you want to add')
     mgr.remotes.add(os.path.realpath(args.path))
 
 def call_remote_remove(mgr, args):
     if not args.path:
-        raise Exception('Give the path you want to remove with --path')
+        raise Exception('Give the path you want to remove')
     mgr.remotes.remove(os.path.realpath(args.path))
 
 def call_remote_list(mgr, args):
@@ -130,6 +142,11 @@ if __name__ == '__main__':
             
     )
     subparsers = arg_parser.add_subparsers()
+
+    parser_update = subparsers.add_parser('update')
+    parser_update.add_argument('--force', action='store_true', help='Force all notes updates')
+    parser_update.set_defaults(func=call_update)
+
 
     parser_add = subparsers.add_parser('add')
     # Store which function to call after the parsing is done (tip given by python.org)
