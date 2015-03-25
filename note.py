@@ -8,6 +8,8 @@ from patterns import Borg
 import parser
 import traceback
 
+from pdb import set_trace
+
 
 class manager(object):
     def __init__(self):
@@ -16,7 +18,7 @@ class manager(object):
         parser.addObserver(keyWordsObserver())
 
     def update(self):
-        for r in self.remotes:
+        for r in self.remotes.values():
             for f in glob(os.path.join(r, '*.mino')):
                 n = self.notes.get(f)
                 if not n:
@@ -113,7 +115,7 @@ def call_remove(mgr, args):
     pass
 
 def call_list(mgr, args):
-    pass
+    print '\n  '.join(f for f in mgr.notes.keys())
 
 def call_search(mgr, args):
     pass
