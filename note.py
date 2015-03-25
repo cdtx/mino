@@ -12,7 +12,7 @@ import traceback
 class manager(object):
     def __init__(self):
         self.notes = {}
-        self.remotes = set()
+        self.remotes = {}
         parser.addObserver(keyWordsObserver())
 
     def update(self):
@@ -119,17 +119,25 @@ def call_search(mgr, args):
     pass
 
 def call_remote_add(mgr, args):
-    if not args.path:
-        raise Exception('Give the path you want to add')
-    mgr.remotes.add(os.path.realpath(args.path))
+    if not args.name:
+        raise Exception('No name given')
+    if not args.url:
+        raise Exception('No url given')
+
+    if os.path.realpath(args.url) in mgr.remotes.values():
+        raise Exception('This url (%s) is already in the remotes list' % os.path.realpath(args.url))
+
+    mgr.remotes[args.name] = os.path.realpath(args.url)
 
 def call_remote_remove(mgr, args):
-    if not args.path:
-        raise Exception('Give the path you want to remove')
-    mgr.remotes.remove(os.path.realpath(args.path))
+    if not args.name:
+        raise Exception('No name given')
+    if not mgr.remotes.has_key(args.name):
+        raise Exception('%s is not a known remote name' % args.name)
+    mgr.remotes.pop(args.name)
 
 def call_remote_list(mgr, args):
-    print '\n'.join(x for x in mgr.remotes)
+    print '\n'.join('%s  %s' % (x, y) for (x,y) in mgr.remotes.iteritems())
 
 
 if __name__ == '__main__':
@@ -162,11 +170,12 @@ if __name__ == '__main__':
     subparsers_remote = parser_remote.add_subparsers()
 
     parser_remote_add = subparsers_remote.add_parser('add')
-    parser_remote_add.add_argument('path', type=str)
+    parser_remote_add.add_argument('name', type=str)
+    parser_remote_add.add_argument('url', type=str)
     parser_remote_add.set_defaults(func=call_remote_add)
 
     parser_remote_remove = subparsers_remote.add_parser('remove')
-    parser_remote_remove.add_argument('path', type=str)
+    parser_remote_remove.add_argument('name', type=str)
     parser_remote_remove.set_defaults(func=call_remote_remove)
 
     parser_remote_list = subparsers_remote.add_parser('list')
