@@ -17,17 +17,25 @@ class manager(object):
         self.remotes = {}
         parser.addObserver(keyWordsObserver())
 
-    def update(self):
-        for r in self.remotes.values():
-            for f in glob(os.path.join(r, '*.mino')):
-                n = self.notes.get(f)
+    def update(self, remote=None):
+        for (k,v) in self.remotes.iteritems():
+            if remote and remote != v:
+                continue
+            for f in glob(os.path.join(v, '*.mino')):
+                n = self.notes.get((k,f))
                 if not n:
-                    self.notes[f] = note(f)
+                    self.notes[(k,f)] = note(f)
                 else:
                     n.update()
 
-    def flush(self):
-        self.notes.clear()
+    def flush(self, remote=None):
+        if not remote:
+            self.notes.clear()
+        else:
+            for x in self.notes.keys():
+                if x[0] == remote:
+                    self.notes.pop(x)
+
 
 class keyWordsObserver(Borg):
     def update(self, issuer, event, message):
@@ -104,9 +112,10 @@ def db_close(mgr):
 
 
 def call_update(mgr, args):
+    remote = args.remote
     if args.force:
-        mgr.flush()
-    mgr.update()
+        mgr.flush(remote)
+    mgr.update(remote)
 
 def call_add(mgr, args):
     pass
@@ -115,7 +124,7 @@ def call_remove(mgr, args):
     pass
 
 def call_list(mgr, args):
-    print '\n'.join(f for f in mgr.notes.keys())
+    print '\n'.join('-'.join(f) for f in mgr.notes.keys() if (not args.remote or f[0]==args.remote))
 
 def call_search(mgr, args):
     pass
@@ -147,10 +156,12 @@ if __name__ == '__main__':
                 description='Command line interface for powerfull notes and todos managment',        
             
     )
+
     subparsers = arg_parser.add_subparsers()
 
     parser_update = subparsers.add_parser('update')
     parser_update.add_argument('--force', action='store_true', help='Force all notes updates')
+    parser_update.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_update.set_defaults(func=call_update)
 
 
@@ -162,6 +173,7 @@ if __name__ == '__main__':
     parser_remove.set_defaults(func=call_remove)
 
     parser_list = subparsers.add_parser('list')
+    parser_list.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_list.set_defaults(func=call_list)
 
     parser_search = subparsers.add_parser('search')
