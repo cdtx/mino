@@ -13,7 +13,9 @@ from pdb import set_trace
 
 class manager(object):
     def __init__(self):
+        # [<note_name>] = <note object>
         self.notes = {}
+        # [(<remote, note file>)] = note object
         self.remotes = {}
         parser.addObserver(keyWordsObserver())
 
@@ -127,7 +129,11 @@ def call_list(mgr, args):
     print '\n'.join('-'.join(f) for f in mgr.notes.keys() if (not args.remote or f[0]==args.remote))
 
 def call_search(mgr, args):
-    pass
+    for (k,v) in mgr.notes.iteritems():
+        toFind = set(map(str.lower, args.words))
+        if toFind.issubset(v.words):
+            print k
+
 
 def call_remote_add(mgr, args):
     if not args.name:
@@ -177,6 +183,8 @@ if __name__ == '__main__':
     parser_list.set_defaults(func=call_list)
 
     parser_search = subparsers.add_parser('search')
+    parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
+    parser_search.add_argument('words', type=str, nargs='+')
     parser_search.set_defaults(func=call_search)
 
     # The remote parser
