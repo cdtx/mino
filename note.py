@@ -42,7 +42,7 @@ class manager(object):
 class keyWordsObserver(Borg):
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            if isinstance(issuer, parser.mdTitle):
+            if filter(lambda x: isinstance(issuer, x), [parser.mdTitle, parser.mdTextLine]):
                 self.tgt.update(set(issuer.content.lower().split()))
 
     def setTarget(self, tgt):
