@@ -130,6 +130,8 @@ def call_list(mgr, args):
 
 def call_search(mgr, args):
     for (k,v) in mgr.notes.iteritems():
+        if args.remote and not k[0]==args.remote:
+            continue
         toFind = set(map(str.lower, args.words))
         if toFind.issubset(v.words):
             print k
