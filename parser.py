@@ -3,6 +3,9 @@
 import sys, os, re, io
 import imp, traceback
 
+from patterns import Borg
+
+
 class subject(object):
     def __init__(self):
         self.observers = []
@@ -29,7 +32,14 @@ class subject(object):
         for obs in self.observers:
             obs.update(issuer, event, message)
 
-class mdElement(object):
+# def addObserver(obs):
+#     subject().addObserver(obs)
+# 
+# def log(issuer=None, event='', message=''):
+#     subject().update(issuer, event, message)
+
+    
+class mdElement:
     def __init__(self, **kwargs):
         ''' Constructor parameters :
         
@@ -46,7 +56,7 @@ class mdElement(object):
                     ):
             setattr(self, p, kwargs.get(p, d))
 
-        # Observablility
+        # Observability
         self.subject = subject()
 
         self.id = None
@@ -60,9 +70,12 @@ class mdElement(object):
         self.indentSize = 4
 
         self.acceptList = []
+        self.log('mino/parser/info', 'Created element [%s]'%type(self))
         
     def addObserver(self, obs):
         self.subject.addObserver(obs)
+        for c in self.childs:
+            c.addObserver(obs)
 
     def log(self, event='', message=''):
         self.subject.update(self, event, message)
@@ -545,7 +558,7 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
-    from mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
+    from cdtx.mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
     
     subject().addObserver(DumbObserver())
     html = HtmlDocObserver()
