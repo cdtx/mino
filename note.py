@@ -4,7 +4,6 @@ import pickle
 import argparse
 import hashlib
 from glob import glob
-from patterns import Borg
 import parser
 import traceback
 
@@ -17,7 +16,6 @@ class manager(object):
         self.notes = {}
         # [(<remote, note file>)] = note object
         self.remotes = {}
-        parser.addObserver(keyWordsObserver())
 
     def update(self, remote=None):
         for (k,v) in self.remotes.iteritems():
@@ -39,14 +37,16 @@ class manager(object):
                     self.notes.pop(x)
 
 
-class keyWordsObserver(Borg):
+class keyWordsObserver(object):
+    def __init__(self, tgt):
+        self.tgt = tgt
+
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            if filter(lambda x: isinstance(issuer, x), [parser.mdTitle, parser.mdTextLine]):
+            if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine):
+                print 'yep'
                 self.tgt.update(set(issuer.content.lower().split()))
 
-    def setTarget(self, tgt):
-        self.tgt = tgt
 
 class note(object):
     def __init__(self, filePath):
@@ -62,7 +62,8 @@ class note(object):
             # Do long update stuff here
             try:
                 doc = parser.load(self.filePath)
-                keyWordsObserver().setTarget(self.words)
+                obs = keyWordsObserver(self.words)
+                doc.addObserver(obs)
                 doc.doc()
                 self.cksum = self.getHash()
             except:
@@ -128,13 +129,27 @@ def call_remove(mgr, args):
 def call_list(mgr, args):
     print '\n'.join('-'.join(f) for f in mgr.notes.keys() if (not args.remote or f[0]==args.remote))
 
+
+class printKeywordsMatchingObserver(object):
+    def update(self, issuer, event, message):
+        if event == 'mino/doc/start':
+            if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine):
+                # If one of the searched words in in the content
+                if filter(lambda x: x in issuer.content, self.words):
+                    print content
+
 def call_search(mgr, args):
     for (k,v) in mgr.notes.iteritems():
         if args.remote and not k[0]==args.remote:
             continue
+        # Are the given words part of the whole words of a note
         toFind = set(map(str.lower, args.words))
         if toFind.issubset(v.words):
+            # If so, print the note, then the extract where the words where found
             print k
+            doc = parser.load(k[1])
+            doc.addObserver(printKeywordsMatchingObserver())
+            doc.doc()
 
 
 def call_remote_add(mgr, args):

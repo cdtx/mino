@@ -3,13 +3,9 @@
 import sys, os, re, io
 import imp, traceback
 
-from patterns import Borg
-
-class subject(Borg):
+class subject(object):
     def __init__(self):
-        Borg.__init__(self)
-        if not hasattr(self, 'observers'):
-            setattr(self, 'observers', [])
+        self.observers = []
         
     def addObserver(self, obs):
         self.observers.append(obs)
@@ -33,14 +29,7 @@ class subject(Borg):
         for obs in self.observers:
             obs.update(issuer, event, message)
 
-def addObserver(obs):
-    subject().addObserver(obs)
-
-def log(issuer=None, event='', message=''):
-    subject().update(issuer, event, message)
-
-    
-class mdElement:
+class mdElement(object):
     def __init__(self, **kwargs):
         ''' Constructor parameters :
         
@@ -57,6 +46,9 @@ class mdElement:
                     ):
             setattr(self, p, kwargs.get(p, d))
 
+        # Observablility
+        self.subject = subject()
+
         self.id = None
         self.opened = False
         self.childs = []
@@ -68,8 +60,13 @@ class mdElement:
         self.indentSize = 4
 
         self.acceptList = []
-        log(self, 'mino/parser/info', 'Created element [%s]'%type(self))
         
+    def addObserver(self, obs):
+        self.subject.addObserver(obs)
+
+    def log(self, event='', message=''):
+        self.subject.update(self, event, message)
+
     def extractExtraParams(self):
         # If extraParam have been found on the same line, process it now
         if self.extra:
@@ -126,10 +123,10 @@ class mdElement:
         pass
     
     def doc(self):
-        log(self, 'mino/doc/start')
+        self.log('mino/doc/start')
         for x in self.childs:
             x.doc()
-        log(self, 'mino/doc/stop')
+        self.log('mino/doc/stop')
 
 class mdRootDoc(mdElement):
     def __init__(self, **kwargs):
