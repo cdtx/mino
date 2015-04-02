@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import os
+import string
 import pickle
 import argparse
 import hashlib
@@ -43,9 +44,9 @@ class keyWordsObserver(object):
 
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine):
-                print 'yep'
-                self.tgt.update(set(issuer.content.lower().split()))
+            if (isinstance(issuer, parser.mdTitle)) or (isinstance(issuer, parser.mdTextLine)):
+                # Remove punctuation, set to lower, then split
+                self.tgt.update(set(''.join([ch for ch in issuer.content.lower() if ch not in string.punctuation]).split()))
 
 
 class note(object):
@@ -62,8 +63,7 @@ class note(object):
             # Do long update stuff here
             try:
                 doc = parser.load(self.filePath)
-                obs = keyWordsObserver(self.words)
-                doc.addObserver(obs)
+                doc.addObserver(keyWordsObserver(self.words))
                 doc.doc()
                 self.cksum = self.getHash()
             except:
@@ -131,12 +131,20 @@ def call_list(mgr, args):
 
 
 class printKeywordsMatchingObserver(object):
+    def __init__(self, words):
+        self.words = words
+
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine):
+            if isinstance(issuer, parser.mdTitle):
+                # If one of the searched words in in the content
+                if filter(lambda x: x in issuer.content.lower(), self.words):
+                    print issuer.content
+            elif isinstance(issuer, parser.mdTextLine):
                 # If one of the searched words in in the content
                 if filter(lambda x: x in issuer.content, self.words):
-                    print content
+                    print issuer.content
+
 
 def call_search(mgr, args):
     for (k,v) in mgr.notes.iteritems():
@@ -148,7 +156,7 @@ def call_search(mgr, args):
             # If so, print the note, then the extract where the words where found
             print k
             doc = parser.load(k[1])
-            doc.addObserver(printKeywordsMatchingObserver())
+            doc.addObserver(printKeywordsMatchingObserver(toFind))
             doc.doc()
 
 
