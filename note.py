@@ -162,6 +162,7 @@ def call_search(mgr, args):
             doc = parser.load(k[1])
             doc.addObserver(printKeywordsMatchingObserver(toFind))
             doc.doc()
+            print ''
 
     # If an edition is requested
     if args.edit != None:
