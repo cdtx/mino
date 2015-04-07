@@ -7,15 +7,16 @@ import hashlib
 from glob import glob
 import parser
 import traceback
+import subprocess
 
 from pdb import set_trace
 
 
 class manager(object):
     def __init__(self):
-        # [<note_name>] = <note object>
+        # {(<remote>,<note_name>) : <note object>}
         self.notes = {}
-        # [(<remote, note file>)] = note object
+        # {<remote name> : <remote path>}
         self.remotes = {}
 
     def update(self, remote=None):
@@ -147,18 +148,29 @@ class printKeywordsMatchingObserver(object):
 
 
 def call_search(mgr, args):
+    matching = []
     for (k,v) in mgr.notes.iteritems():
+        # Is this remote to be part of the search
         if args.remote and not k[0]==args.remote:
             continue
         # Are the given words part of the whole words of a note
         toFind = set(map(str.lower, args.words))
         if toFind.issubset(v.words):
+            matching.append(k)
             # If so, print the note, then the extract where the words where found
             print k
             doc = parser.load(k[1])
             doc.addObserver(printKeywordsMatchingObserver(toFind))
             doc.doc()
 
+    # If an edition is requested
+    if args.edit != None:
+        try:
+            print 'Editing %s' % str(matching[args.edit])
+            callArgs = ['gvim', matching[args.edit][1]]
+            subprocess.Popen(callArgs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        except:
+            print 'Invalid edition request'
 
 def call_remote_add(mgr, args):
     if not args.name:
@@ -209,7 +221,8 @@ if __name__ == '__main__':
 
     parser_search = subparsers.add_parser('search')
     parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
-    parser_search.add_argument('words', type=str, nargs='+')
+    parser_search.add_argument('words', type=str, nargs='*', help='The words to look for, can be empty for listing the whole notes')
+    parser_search.add_argument('--edit', type=int, const=0, nargs='?', help='Open the first or specified note in the default text editor')
     parser_search.set_defaults(func=call_search)
 
     # The remote parser
