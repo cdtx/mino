@@ -87,7 +87,7 @@ class HtmlDocObserver(filterableObserver):
         self.localRessources = localRessources        
 
         self.generateResourcesPath()
-
+        
     def __str__(self):
         return self.str
     
@@ -184,10 +184,9 @@ class HtmlDocObserver(filterableObserver):
         return ([highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True))], [])
     
     def mdPlugin(self, issuer):
-        before =    [   '<p %s>' % self.extraParams(issuer),
-                        issuer.output.getvalue().replace('\n', '<br/>'),
+        before =    [   '<div %s>' % self.extraParams(issuer),
                     ]
-        after =    ['</p>']
+        after =    ['</div>']
         return (before, after)
     
     def mdLink(self, issuer):
