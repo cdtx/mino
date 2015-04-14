@@ -77,32 +77,39 @@ class DumbObserver(filterableObserver):
         print issuer, event, message
         
 class HtmlDocObserver(filterableObserver):
-    def __init__(self):
+    def __init__(self, localRessources=False):
         filterableObserver.__init__(self)
         self.indent = 0
         self.titleLevel = 1
         self.style = 'default'
         self.str = ''
         self.basePath = os.path.dirname(__file__)
-        
+        self.localRessources = localRessources        
+
+        self.generateResourcesPath()
+
     def __str__(self):
         return self.str
     
+    def generateResourcesPath(self):
+        if not self.localRessources:
+            self.cssPath = r'https://rawgit.com/cdtx/mino/master/styles/{style}/style.css'
+        else:
+            self.cssPath = r'%s/styles/{style}/style.css' % self.basePath
+
+
+
     def toFile(self, fileName):
         with open(fileName, 'w') as f:
             f.write(self.str)
 
     def mdRootDoc(self, issuer):
-        # with open('%s/styles/%s/style.css' % (os.path.dirname(os.path.realpath(__file__)), self.style), 'r') as style:
         before =    [   '<!doctype html>',
                         '<html>',
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="%s/styles/%s/style.css" />' % (self.basePath, self.style),
-                        # '    <style>',
-                        # '     %s' % style.read(),
-                        # '    </style>',
+                        '        <link rel="stylesheet" href="%s" />' % self.cssPath.format(style=self.style),
                         '    </head>',
                         '    <body>',
                         '        <article>',
@@ -290,13 +297,20 @@ class PdfDocObserver(HtmlDocObserver):
     Using weasyprint, pdf generation becomes a special case of html generation
     Except the header that changes
     '''
+    def generateResourcesPath(self):
+        if not self.localRessources:
+            self.cssPath = r'https://rawgit.com/cdtx/mino/master/styles/{style}/pdf.css'
+        else:
+            self.cssPath = r'file://localhost/%s/styles/{style}/pdf.css' % self.basePath
+
+
     def mdRootDoc(self, issuer):
         before =    [   '<!doctype html>',
                         '<html>',
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="file://localhost/%s/styles/%s/pdf.css" />' % (self.basePath, self.style),
+                        '        <link rel="stylesheet" href="%s" />' % self.cssPath.format(style=self.style),
                         '    </head>',
                         '    <body>',
                         '        <article>',
@@ -321,10 +335,16 @@ class SlidesObserver(HtmlDocObserver):
     Using reveal.js, slides generation becomes a special case of html generation
     Except the header that changes
     '''
-    def __init__(self):
-        HtmlDocObserver.__init__(self)
+    def __init__(self, localRessources=False):
+        HtmlDocObserver.__init__(self, localRessources)
         self.slidesList = [] 
         self.slidesInProgress = 0
+
+    def generateResourcesPath(self):
+        if self.localRessources:
+            self.revealPath = r'%s/styles/default/reveal'%self.basePath
+        else:
+            self.revealPath = r'https://rawgit.com/hakimel/reveal.js/3.0.0'
 
     def mdRootDoc(self, issuer):
         before = [
@@ -339,14 +359,14 @@ class SlidesObserver(HtmlDocObserver):
             '''''',
             '''		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">''',
             '''''',
-            '''		<link rel="stylesheet" href="%s/styles/%s/reveal/css/reveal.css">''' % (self.basePath, self.style),
-            '''		<link rel="stylesheet" href="%s/styles/%s/reveal/css/theme/black.css" id=theme">''' % (self.basePath, self.style),
+            '''		<link rel="stylesheet" href="%s/css/reveal.css">''' % self.revealPath,
+            '''		<link rel="stylesheet" href="%s/css/theme/black.css" id=theme">''' % self.revealPath,
             '''''',
             '''		<!-- Code syntax highlighting -->''',
-            '''		<link rel="stylesheet" href="%s/styles/%s/reveal/lib/css/zenburn.css">''' % (self.basePath, self.style),
+            '''		<link rel="stylesheet" href="%s/lib/css/zenburn.css">''' % self.revealPath,
             '''''',
             '''		<!--[if lt IE 9]>''',
-            '''		<script src="%s/styles/%s/reveal/lib/js/html5shiv.js"></script>''' % (self.basePath, self.style),
+            '''		<script src="%s/lib/js/html5shiv.js"></script>''' % self.revealPath,
             '''		<![endif]-->''',
             '''	</head>''',
             '''''',
@@ -361,8 +381,8 @@ class SlidesObserver(HtmlDocObserver):
         after = [
             '''         </div>''',
             '''     </div>''',
-            '''     <script src="%s/styles/%s/reveal/lib/js/head.min.js"></script>''' % (self.basePath, self.style),
-            '''		<script src="%s/styles/%s/reveal/js/reveal.js"></script>''' % (self.basePath, self.style),
+            '''     <script src="%s/lib/js/head.min.js"></script>''' % self.revealPath,
+            '''		<script src="%s/js/reveal.js"></script>''' % self.revealPath,
             '''''',
             '''		<script>''',
             '''''',
@@ -378,12 +398,12 @@ class SlidesObserver(HtmlDocObserver):
             '''''',
             '''				// Optional reveal.js plugins''',
             '''				dependencies: [''',
-            '''					{ src: '%s/styles/%s/reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },''' % (self.basePath, self.style),
-            '''					{ src: '%s/styles/%s/reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''' % (self.basePath, self.style),
-            '''					{ src: '%s/styles/%s/reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''' % (self.basePath, self.style),
-            '''					{ src: '%s/styles/%s/reveal/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },''' % (self.basePath, self.style),
-            '''					{ src: '%s/styles/%s/reveal/plugin/zoom-js/zoom.js', async: true },''' % (self.basePath, self.style),
-            '''					{ src: '%s/styles/%s/reveal/plugin/notes/notes.js', async: true }''' % (self.basePath, self.style),
+            '''					{ src: '%s/lib/js/classList.js', condition: function() { return !document.body.classList; } },''' % self.revealPath,
+            '''					{ src: '%s/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''' % self.revealPath,
+            '''					{ src: '%s/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },''' % self.revealPath,
+            '''					{ src: '%s/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },''' % self.revealPath,
+            '''					{ src: '%s/plugin/zoom-js/zoom.js', async: true },''' % self.revealPath,
+            '''					{ src: '%s/plugin/notes/notes.js', async: true }''' % self.revealPath,
             '''				]''',
             '''			});''',
             '''''',
