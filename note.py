@@ -151,7 +151,7 @@ class printKeywordsMatchingObserver(object):
         elif event == 'mino/doc/stop':
             if isinstance(issuer, parser.mdRootDoc):
                 if self.somethingFound:
-                    print 'xx'
+                    print ''
 
 
 
