@@ -134,17 +134,25 @@ def call_list(mgr, args):
 class printKeywordsMatchingObserver(object):
     def __init__(self, words):
         self.words = words
+        self.somethingFound = False
 
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
             if isinstance(issuer, parser.mdTitle):
                 # If one of the searched words in in the content
                 if filter(lambda x: x in issuer.content.lower(), self.words):
+                    self.somethingFound = True
                     print issuer.content
             elif isinstance(issuer, parser.mdTextLine):
                 # If one of the searched words in in the content
                 if filter(lambda x: x in issuer.content, self.words):
+                    self.somethingFound = True
                     print issuer.content
+        elif event == 'mino/doc/stop':
+            if isinstance(issuer, parser.mdRootDoc):
+                if self.somethingFound:
+                    print 'xx'
+
 
 
 def call_search(mgr, args):
@@ -162,7 +170,6 @@ def call_search(mgr, args):
             doc = parser.load(k[1])
             doc.addObserver(printKeywordsMatchingObserver(toFind))
             doc.doc()
-            print ''
 
     # If an edition is requested
     if args.edit != None:
