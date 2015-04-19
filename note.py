@@ -122,7 +122,22 @@ def call_update(mgr, args):
     mgr.update(remote)
 
 def call_add(mgr, args):
-    pass
+    if len(mgr.remotes) == 1:
+        # If one remote only, use it, ignoring the --remote param
+        remote = mgr.remotes[mgr.remotes.keys()[0]]
+
+    if len(mgr.remotes) > 1 and not args.remote:
+        raise Exception('No remote specified')
+
+    if args.remote :
+        remote = mgr.remotes.get(args.remote, None)
+
+    if not remote:
+        raise Exception('Invalid remote')
+
+    print 'remote url', remote
+
+
 
 def call_remove(mgr, args):
     pass
@@ -218,6 +233,7 @@ if __name__ == '__main__':
 
     parser_add = subparsers.add_parser('add')
     # Store which function to call after the parsing is done (tip given by python.org)
+    parser_add.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_add.set_defaults(func=call_add)
 
     parser_remove = subparsers.add_parser('remove')
