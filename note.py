@@ -63,9 +63,13 @@ class note(object):
     def create(path, name=None):
         # If not specified, generate a name
         currentTime = datetime.now()
-        name = '%.4d%.2d%.2d_%.2d%.2d.mino' % (currentTime.year, currentTime.month, currentTime.day,
-                     currentTime.hour, currentTime.minute)
-        return note(os.path.join(path, name))
+        # Note name <year><month><day>_<hour><minute>.mino
+        name = '%.4d%.2d%.2d_%.2d%.2d.mino' % (currentTime.year, currentTime.month, currentTime.day, currentTime.hour, currentTime.minute)
+        notePath = os.path.join(path, name)
+        if not os.path.exists(notePath):
+            return note(notePath)
+        else:
+            raise Exception('Note path already exists (%s)'%notePath)
 
         
     def update(self):
