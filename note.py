@@ -202,7 +202,7 @@ def call_search(mgr, args):
         # Are the given words part of the whole words of a note
         toFind = set(map(str.lower, args.words))
         if toFind.issubset(v.words):
-            matching.append(k)
+            matching.append(v)
             # If so, print the note, then the extract where the words where found
             print k
             doc = parser.load(v.filePath)
