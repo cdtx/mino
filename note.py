@@ -8,6 +8,7 @@ from glob import glob
 import parser
 import traceback
 import subprocess
+from datetime import datetime
 
 from pdb import set_trace
 
@@ -26,7 +27,9 @@ class manager(object):
             for f in glob(os.path.join(v, '*.mino')):
                 n = self.notes.get((k,f))
                 if not n:
-                    self.notes[(k,f)] = note(f)
+                    n = note(f)
+                    n.update()
+                    self.notes[(k,f)] = n
                 else:
                     n.update()
 
@@ -55,7 +58,15 @@ class note(object):
         self.filePath = filePath
         self.words = set()  # In case it's requested before update...
         self.cksum = 0
-        self.update()
+
+    @staticmethod
+    def create(path, name=None):
+        # If not specified, generate a name
+        currentTime = datetime.now()
+        name = '%.4d%.2d%.2d_%.2d%.2d.mino' % (currentTime.year, currentTime.month, currentTime.day,
+                     currentTime.hour, currentTime.minute)
+        return note(os.path.join(path, name))
+
         
     def update(self):
         # Update the note if it has changed
@@ -79,6 +90,14 @@ class note(object):
                 hasher.update(buf)
                 buf = file.read(65536)
             return hasher.digest()
+
+    def edit(self):
+        try:
+            print 'Editing %s' % str(self.filePath)
+            callArgs = ['gvim', self.filePath]
+            subprocess.Popen(callArgs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        except:
+            print 'Invalid edition request'
 
     def __str__(self):
         str = '%s - %s' % (self.filePath, self.cksum)
@@ -114,7 +133,6 @@ def db_save(mgr):
 def db_close(mgr):
     pass
 
-
 def call_update(mgr, args):
     remote = args.remote
     if args.force:
@@ -135,7 +153,8 @@ def call_add(mgr, args):
     if not remote:
         raise Exception('Invalid remote')
 
-    print 'remote url', remote
+    # Create note
+    note.create(remote).edit()
 
 
 
@@ -182,18 +201,13 @@ def call_search(mgr, args):
             matching.append(k)
             # If so, print the note, then the extract where the words where found
             print k
-            doc = parser.load(k[1])
+            doc = parser.load(v.filePath)
             doc.addObserver(printKeywordsMatchingObserver(toFind))
             doc.doc()
 
     # If an edition is requested
     if args.edit != None:
-        try:
-            print 'Editing %s' % str(matching[args.edit])
-            callArgs = ['gvim', matching[args.edit][1]]
-            subprocess.Popen(callArgs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        except:
-            print 'Invalid edition request'
+        matching[args.edit].edit()
 
 def call_remote_add(mgr, args):
     if not args.name:
