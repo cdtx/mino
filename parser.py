@@ -5,11 +5,10 @@ import imp, traceback
 
 from patterns import Borg
 
-class subject(Borg):
+
+class subject(object):
     def __init__(self):
-        Borg.__init__(self)
-        if not hasattr(self, 'observers'):
-            setattr(self, 'observers', [])
+        self.observers = []
         
     def addObserver(self, obs):
         self.observers.append(obs)
@@ -33,8 +32,11 @@ class subject(Borg):
         for obs in self.observers:
             obs.update(issuer, event, message)
 
-def log(issuer=None, event='', message=''):
-    subject().update(issuer, event, message)
+# def addObserver(obs):
+#     subject().addObserver(obs)
+# 
+# def log(issuer=None, event='', message=''):
+#     subject().update(issuer, event, message)
 
     
 class mdElement:
@@ -54,6 +56,9 @@ class mdElement:
                     ):
             setattr(self, p, kwargs.get(p, d))
 
+        # Observability
+        self.subject = subject()
+
         self.id = None
         self.opened = False
         self.childs = []
@@ -65,8 +70,16 @@ class mdElement:
         self.indentSize = 4
 
         self.acceptList = []
-        log(self, 'mino/parser/info', 'Created element [%s]'%type(self))
+        self.log('mino/parser/info', 'Created element [%s]'%type(self))
         
+    def addObserver(self, obs):
+        self.subject.addObserver(obs)
+        for c in self.childs:
+            c.addObserver(obs)
+
+    def log(self, event='', message=''):
+        self.subject.update(self, event, message)
+
     def extractExtraParams(self):
         # If extraParam have been found on the same line, process it now
         if self.extra:
@@ -123,10 +136,10 @@ class mdElement:
         pass
     
     def doc(self):
-        log(self, 'mino/doc/start')
+        self.log('mino/doc/start')
         for x in self.childs:
             x.doc()
-        log(self, 'mino/doc/stop')
+        self.log('mino/doc/stop')
 
 class mdRootDoc(mdElement):
     def __init__(self, **kwargs):
@@ -495,23 +508,23 @@ class mdImage(mdLink):
 linePatterns = (
     # Regex, flags, description
     # mino elements
-    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?\n', re.IGNORECASE | re.DOTALL, mdExtraParams),
-    (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?\n', re.IGNORECASE, mdDocumentTitle),
-    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdTitle),
-    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdUnorderedList),
-    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdOrderedList),
-    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdTable),
-    (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, mdBlocOfCode),
-    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdLink),
-    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, mdImage),
+    (r'(?P<indent>[\t ]*)\[(?P<content>.*?)\]\r?(\n|$)', re.IGNORECASE | re.DOTALL, mdExtraParams),
+    (r'(?P<indent>)(?P<content>.*)\r?\n=+[\t ]*\r?(\n|$)', re.IGNORECASE, mdDocumentTitle),
+    (r'(?P<indent>[\t ]*)#(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdTitle),
+    (r'(?P<indent>[\t ]*)-(?!-)(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdUnorderedList),
+    (r'(?P<indent>[\t ]*)\d+\.(?P<content>.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdOrderedList),
+    (r'(?P<indent>[\t ]*)(?P<content>\|.*?)(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdTable),
+    (r'(?P<indent>[\t ]*)```[\t ]*(?P<lang>.*?)\r?\n(?P<content>.*?)```[\t ]*\r?(\n|$)', re.IGNORECASE | re.DOTALL, mdBlocOfCode),
+    (r'(?P<indent>[\t ]*)!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdLink),
+    (r'(?P<indent>[\t ]*)!!\((?P<url>.*?)\)\((?P<caption>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?(\n|$)', re.IGNORECASE, mdImage),
     # (r'(?P<indent>[\t ]*)!#\((?P<url>.*?)\)[\t ]*(\[(?P<extra>.*?)\])?\r?\n', re.IGNORECASE, 'Include'),
     
     # Plugin
-    (r'(?P<indent>[\t ]*)_\{ *(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?\n', re.IGNORECASE | re.DOTALL, mdPlugin),
+    (r'(?P<indent>[\t ]*)_\{ *(?P<name>\w+)[\t ]*(?P<content>\r?\n?.*?)\}_[\t ]*(\[(?P<extra>.*?)\])?[\t ]*\r?(\n|$)', re.IGNORECASE | re.DOTALL, mdPlugin),
     
     # Decorative lines
-    (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?\n', re.IGNORECASE, mdTextLine),
-    (r'(?P<indent>)([\t ]*)\r?\n?', re.IGNORECASE, mdEmptyLine),
+    (r'(?P<indent>[\t ]*)(?P<content>\S.*)\r?(\n|$)', re.IGNORECASE, mdTextLine),
+    (r'(?P<indent>)([\t ]*)\r?(\n|$)', re.IGNORECASE, mdEmptyLine),
 )
     
 inlinePatterns = (
@@ -545,7 +558,7 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
-    from mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
+    from cdtx.mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
     
     subject().addObserver(DumbObserver())
     html = HtmlDocObserver()
