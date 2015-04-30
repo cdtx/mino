@@ -169,23 +169,20 @@ def call_list(mgr, args):
     print '\n'.join('-'.join(f) for f in mgr.notes.keys() if (not args.remote or f[0]==args.remote))
 
 
-class printKeywordsMatchingObserver(object):
+class printTitleAndKeywordsMatchingObserver(object):
     def __init__(self, words):
         self.words = words
         self.somethingFound = False
 
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
-            if isinstance(issuer, parser.mdTitle):
+            if isinstance(issuer, parser.mdDocumentTitle):
+                print issuer.content
+            if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine) or isinstance(issuer, parser.mdListItem):
                 # If one of the searched words in in the content
                 if filter(lambda x: x in issuer.content.lower(), self.words):
                     self.somethingFound = True
-                    print issuer.content
-            elif isinstance(issuer, parser.mdTextLine):
-                # If one of the searched words in in the content
-                if filter(lambda x: x in issuer.content, self.words):
-                    self.somethingFound = True
-                    print issuer.content
+                    print '\t'+issuer.content
         elif event == 'mino/doc/stop':
             if isinstance(issuer, parser.mdRootDoc):
                 if self.somethingFound:
@@ -206,8 +203,9 @@ def call_search(mgr, args):
             # If so, print the note, then the extract where the words where found
             print k
             doc = parser.load(v.filePath)
-            doc.addObserver(printKeywordsMatchingObserver(toFind))
+            doc.addObserver(printTitleAndKeywordsMatchingObserver(toFind))
             doc.doc()
+            print ''
 
     # If an edition is requested
     if args.edit != None:
