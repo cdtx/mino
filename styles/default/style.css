@@ -76,9 +76,32 @@ h5 {
     margin-left: 8%;
     counter-increment: h5;
 }
-                        
 
-h2, h3, h4, h5, h6{
+.minoParagraph6 {
+    counter-reset: h7;
+}
+h6:before {
+    counter-increment: h6;
+    //content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5)"." counter(h6) " "
+}
+h6 {
+    margin-left: 8%;
+    counter-increment: h5;
+}                      
+.minoParagraph7 {
+    counter-reset: h8;
+}
+h7:before {
+    counter-increment: h7;
+    //content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) "." counter(h6)"." counter(h7) " "
+}
+h7 {
+    margin-left: 8%;
+    counter-increment: h6;
+}                      
+
+
+h2, h3, h4, h5, h6, h7, h8{
     color: darkcyan;
 }
 p {
