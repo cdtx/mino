@@ -5,12 +5,12 @@ import pickle
 import argparse
 import hashlib
 from glob import glob
-import parser
+import parser, observers
 import traceback
 import subprocess
 from datetime import datetime
 
-from pdb import set_trace
+from PyQt4 import QtCore, QtGui, QtWebKit
 
 
 class manager(object):
@@ -102,6 +102,27 @@ class note(object):
             subprocess.Popen(callArgs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
         except:
             print 'Invalid edition request'
+
+    def view(self):
+        try:
+            print 'Viewing %s' % str(self.filePath)
+            # Generate the HTML
+            doc = parser.load(self.filePath)
+            obs = observers.HtmlDocObserver()
+            doc.addObserver(obs)
+            doc.doc()
+
+            app = QtGui.QApplication([])
+
+            wgt = QtWebKit.QWebView()
+            wgt.setHtml(str(obs))
+            wgt.show()
+
+            app.exec_()
+        except:
+            print 'Invalid request to web browser'
+            print traceback.format_exc()
+
 
     def __str__(self):
         str = '%s - %s' % (self.filePath, self.cksum)
@@ -207,8 +228,10 @@ def call_search(mgr, args):
             doc.doc()
             print ''
 
-    # If an edition is requested
-    if args.edit != None:
+    # If a view or edition is requested
+    if args.view != None:
+        matching[args.view].view()
+    elif args.edit != None:
         matching[args.edit].edit()
 
 def call_remote_add(mgr, args):
@@ -262,6 +285,7 @@ if __name__ == '__main__':
     parser_search = subparsers.add_parser('search')
     parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_search.add_argument('words', type=str, nargs='*', help='The words to look for, can be empty for listing the whole notes')
+    parser_search.add_argument('--view', type=int, const=0, nargs='?', help='Open the first or specified note in a html light browser')
     parser_search.add_argument('--edit', type=int, const=0, nargs='?', help='Open the first or specified note in the default text editor')
     parser_search.set_defaults(func=call_search)
 
