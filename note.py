@@ -5,10 +5,12 @@ import pickle
 import argparse
 import hashlib
 from glob import glob
-import parser
+import parser, observers
 import traceback
 import subprocess
 from datetime import datetime
+import tempfile
+import webbrowser
 
 from pdb import set_trace
 
@@ -102,6 +104,21 @@ class note(object):
             subprocess.Popen(callArgs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
         except:
             print 'Invalid edition request'
+
+    def serve(self):
+        try:
+            print 'Serving %s' % str(self.filePath)
+            # Plug html observer
+            doc = parser.load(self.filePath)
+            obs = observers.HtmlDocObserver()
+            doc.addObserver(obs)
+            doc.doc()
+            tmpFile = tempfile.NamedTemporaryFile(suffix='.html')
+            tmpFile.close()
+            obs.toFile(tmpFile.name)
+            webbrowser.open('file:///' + tmpFile.name)
+        except Exception as e :
+            print 'An error occurs, cannot serve', e
 
     def __str__(self):
         str = '%s - %s' % (self.filePath, self.cksum)
@@ -210,6 +227,8 @@ def call_search(mgr, args):
     # If an edition is requested
     if args.edit != None:
         matching[args.edit].edit()
+    elif args.serve != None:
+        matching[args.serve].serve()
 
 def call_remote_add(mgr, args):
     if not args.name:
@@ -263,6 +282,7 @@ if __name__ == '__main__':
     parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_search.add_argument('words', type=str, nargs='*', help='The words to look for, can be empty for listing the whole notes')
     parser_search.add_argument('--edit', type=int, const=0, nargs='?', help='Open the first or specified note in the default text editor')
+    parser_search.add_argument('--serve', type=int, const=0, nargs='?', help='Open the first or specified note in the default webbrowser')
     parser_search.set_defaults(func=call_search)
 
     # The remote parser
