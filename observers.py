@@ -287,6 +287,7 @@ class HtmlDocObserver(filterableObserver):
                 'link':r'<a href="\1">\2</a>',
         }
                 
+        content = content.replace('\n', '<br/>')
         for (pat, opt, type) in inlinePatterns:
             if type in repl.keys():
                 content = re.sub(pat, repl[type], content, flags=opt)

@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import os
+import os, re
 import string
 import pickle
 import argparse
@@ -9,8 +9,10 @@ import parser, observers
 import traceback
 import subprocess
 from datetime import datetime
+import tempfile
+import webbrowser
 
-from PyQt4 import QtCore, QtGui, QtWebKit
+from pdb import set_trace
 
 
 class manager(object):
@@ -50,7 +52,7 @@ class keyWordsObserver(object):
         if event == 'mino/doc/start':
             if (isinstance(issuer, parser.mdTitle)) or (isinstance(issuer, parser.mdTextLine)):
                 # Remove punctuation, set to lower, then split
-                self.tgt.update(set(''.join([ch for ch in issuer.content.lower() if ch not in string.punctuation]).split()))
+                self.tgt.update(set(re.split(r'[ /.=,;:!?(){}[]|]', issuer.content.lower())))
 
 
 class note(object):
@@ -103,26 +105,20 @@ class note(object):
         except:
             print 'Invalid edition request'
 
-    def view(self):
+    def serve(self):
         try:
-            print 'Viewing %s' % str(self.filePath)
-            # Generate the HTML
+            print 'Serving %s' % str(self.filePath)
+            # Plug html observer
             doc = parser.load(self.filePath)
             obs = observers.HtmlDocObserver()
             doc.addObserver(obs)
             doc.doc()
-
-            app = QtGui.QApplication([])
-
-            wgt = QtWebKit.QWebView()
-            wgt.setHtml(str(obs))
-            wgt.show()
-
-            app.exec_()
-        except:
-            print 'Invalid request to web browser'
-            print traceback.format_exc()
-
+            tmpFile = tempfile.NamedTemporaryFile(suffix='.html')
+            tmpFile.close()
+            obs.toFile(tmpFile.name)
+            webbrowser.open('file:///' + tmpFile.name)
+        except Exception as e :
+            print 'An error occurs, cannot serve', e
 
     def __str__(self):
         str = '%s - %s' % (self.filePath, self.cksum)
@@ -198,12 +194,12 @@ class printTitleAndKeywordsMatchingObserver(object):
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
             if isinstance(issuer, parser.mdDocumentTitle):
-                print issuer.content
+                print '\t',issuer.content
             if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine) or isinstance(issuer, parser.mdListItem):
                 # If one of the searched words in in the content
                 if filter(lambda x: x in issuer.content.lower(), self.words):
                     self.somethingFound = True
-                    print '\t'+issuer.content
+                    print '\t\t'+issuer.content
         elif event == 'mino/doc/stop':
             if isinstance(issuer, parser.mdRootDoc):
                 if self.somethingFound:
@@ -222,17 +218,17 @@ def call_search(mgr, args):
         if toFind.issubset(v.words):
             matching.append(v)
             # If so, print the note, then the extract where the words where found
-            print k
+            print matching.index(v), k
             doc = parser.load(v.filePath)
             doc.addObserver(printTitleAndKeywordsMatchingObserver(toFind))
             doc.doc()
             print ''
 
-    # If a view or edition is requested
-    if args.view != None:
-        matching[args.view].view()
-    elif args.edit != None:
+    # If an edition is requested
+    if args.edit != None:
         matching[args.edit].edit()
+    elif args.serve != None:
+        matching[args.serve].serve()
 
 def call_remote_add(mgr, args):
     if not args.name:
@@ -285,8 +281,8 @@ if __name__ == '__main__':
     parser_search = subparsers.add_parser('search')
     parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_search.add_argument('words', type=str, nargs='*', help='The words to look for, can be empty for listing the whole notes')
-    parser_search.add_argument('--view', type=int, const=0, nargs='?', help='Open the first or specified note in a html light browser')
     parser_search.add_argument('--edit', type=int, const=0, nargs='?', help='Open the first or specified note in the default text editor')
+    parser_search.add_argument('--serve', type=int, const=0, nargs='?', help='Open the first or specified note in the default webbrowser')
     parser_search.set_defaults(func=call_search)
 
     # The remote parser
