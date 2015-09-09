@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import os
+import os, re
 import string
 import pickle
 import argparse
@@ -52,7 +52,7 @@ class keyWordsObserver(object):
         if event == 'mino/doc/start':
             if (isinstance(issuer, parser.mdTitle)) or (isinstance(issuer, parser.mdTextLine)):
                 # Remove punctuation, set to lower, then split
-                self.tgt.update(set(''.join([ch for ch in issuer.content.lower() if ch not in string.punctuation]).split()))
+                self.tgt.update(set(re.split(r'[ /.=,;:!?(){}[]|]', issuer.content.lower())))
 
 
 class note(object):
@@ -194,12 +194,12 @@ class printTitleAndKeywordsMatchingObserver(object):
     def update(self, issuer, event, message):
         if event == 'mino/doc/start':
             if isinstance(issuer, parser.mdDocumentTitle):
-                print issuer.content
+                print '\t',issuer.content
             if isinstance(issuer, parser.mdTitle) or isinstance(issuer, parser.mdTextLine) or isinstance(issuer, parser.mdListItem):
                 # If one of the searched words in in the content
                 if filter(lambda x: x in issuer.content.lower(), self.words):
                     self.somethingFound = True
-                    print '\t'+issuer.content
+                    print '\t\t'+issuer.content
         elif event == 'mino/doc/stop':
             if isinstance(issuer, parser.mdRootDoc):
                 if self.somethingFound:
@@ -218,7 +218,7 @@ def call_search(mgr, args):
         if toFind.issubset(v.words):
             matching.append(v)
             # If so, print the note, then the extract where the words where found
-            print k
+            print matching.index(v), k
             doc = parser.load(v.filePath)
             doc.addObserver(printTitleAndKeywordsMatchingObserver(toFind))
             doc.doc()
