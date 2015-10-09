@@ -133,6 +133,20 @@ MINO documentation
             self.append(l)
         }_
 
+        _{ aafigure
+                              "R1"  
+                             +----+   
+                     +-------+    +----+ 
+                ^    |       +----+    |        ^
+                |    |                +++       |
+                |   -+-               | |       |
+             "U"|                     | | "R2"  |"V = U (R2/R1+R2)"
+                |   -+-               | |       |
+                     |                +++  
+                     |                 |
+                     +-----------------+
+        }_
+
     # Summary
         
         [type=summary]
