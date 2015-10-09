@@ -238,10 +238,12 @@ class mdTextLine(mdElement):
              name       default value
             =========  =================
              content    ''
+             inline     True
             =========  =================
         '''
         for (p, d) in(  
                         ('content', ''),
+                        ('inline', True),
                     ):
             setattr(self, p, kwargs.get(p, d))
                 

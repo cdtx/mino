@@ -144,7 +144,7 @@ class HtmlDocObserver(filterableObserver):
         
     def mdTextLine(self, issuer):
         before =    [   '<p %s>' % self.extraParams(issuer),
-                        '    %s' % (self.htmlReplaceInline(issuer.text))
+                        '    %s' % (self.htmlReplaceInline(issuer.text) if issuer.inline else issuer.text)
                     ]
         after =     ['</p>']
         return (before, after)
