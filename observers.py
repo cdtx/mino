@@ -35,6 +35,9 @@ class mdFilter(object):
         return bool(re.search(self.pattern, elementPattern))
 
     def elementSubPattern(self, issuer):
+        '''
+        Returns the content if object is a mdTitle, the class name otherwise
+        '''
         classDesc = str(issuer.__class__).split('.')[-1]
         if isinstance(issuer, parser.mdTitle):
             return r'%s' % (issuer.content.lower())
@@ -148,7 +151,12 @@ class HtmlDocObserver(filterableObserver):
         return (before, after)
         
     def mdDocumentTitle(self, issuer):
-        return (['<!-- <doc_title> -->'], ['<!-- </doc_title> -->'])
+        before =    [   '<div class="page-header">',
+                        '<h1>%s</h1>' % self.htmlReplaceInline(issuer.title),
+                        '</div>',
+                    ]
+        after = []
+        return (before, after)
         
     def mdTextLine(self, issuer):
         before =    [   '<p %s>' % self.extraParams(issuer),

@@ -16,17 +16,17 @@ header div{
     background-size: 100%;
 }
 
-.minoParagraph1 {
-    counter-reset: h2;
-    counter-increment: h1;
-}
-h1:before {
-    content: counter(h1) ". ";
-}
-h1 {
-    color: darkcyan;
-    font-size: xx-large;
-}
+// .minoParagraph1 {
+//     counter-reset: h2;
+//     counter-increment: h1;
+// }
+// h1:before {
+//     content: counter(h1) ". ";
+// }
+// h1 {
+//     color: darkcyan;
+//     font-size: xx-large;
+// }
 
 
 .minoParagraph2 {

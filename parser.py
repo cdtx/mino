@@ -223,12 +223,7 @@ class mdDocumentTitle(mdTitle):
              content    ''
             =========  =================
         '''
-        for (p, d) in(  
-                        ('content', ''),
-                    ):
-            setattr(self, p, kwargs.get(p, d))
-
-        mdElement.__init__(self, **kwargs)
+        mdTitle.__init__(self, **kwargs)
 
 class mdTextLine(mdElement):
     def __init__(self, **kwargs):
