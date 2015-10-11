@@ -7,4 +7,4 @@ def run(content, output, globals=None, locals=None):
     # Remove the annoying DTD url (not sure the best way to do this)
     s = strSVG.create_svg()
     s = re.sub(r'^.*?(?=<svg)', r'', s, 0, re.DOTALL|re.MULTILINE)
-    locals['self'].append(globals['mdTextLine'](content=s))
+    locals['self'].append(globals['mdTextLine'](content=s, inline=False))

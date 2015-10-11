@@ -94,58 +94,76 @@ MINO documentation
                 if __name__ == '__main__':
                     f()
             ```
-    [type=summary]
-    # Graph
-        _{ graphviz
-            digraph {
-                A->B->C
-            }
-        }_
+    # Plugins
+        [type=summary]
+        # graphviz
+            _{ graphviz
+                digraph {
+                    A->B->C
+                }
+            }_
+
+            _{ graphviz
+                digraph G {
+                    rankdir="LR";
+                    bgcolor="transparent";
+                    node[width=0.15,height=0.15,shape=point];
+                    edge[weight=2,arrowhead=none];
+                    node[group=main];
+                    1 -> 2 -> 3 -> 4 -> 5;
+                    node[group=branch];
+                    2 -> 6;
+                    6 -> 10[style=dashed,label="+3"];
+                    10 -> 4;
+                }
+            }_
 
 
 
-    [type=summary]
-    # UML
-        _{ plantuml
-                class A 
-                class B --|> class A
-                class C --|> class B
-        }_
+        [type=summary]
+        # plantuml plugin
+            _{ plantuml
+                    class A 
+                    class B --|> class A
+                    class C --|> class B
+            }_
 
-    
-    # Python plugin
-        _{ python
-            print 'xx'
-            i = 42
-        }_
+        
+        # Python plugin
+            _{ python
+                print 'xx'
+                i = 42
+            }_
 
-        _{python
-            print i
-            print self
-            print dir(self)
-            self.append(mdTextLine(content='A plugin that adds text'))
+            _{python
+                print i
+                print self
+                print dir(self)
+                self.append(mdTextLine(content='A plugin that adds text'))
 
-            l = mdUnorderedList(content='a')
-            l.merge(mdUnorderedList(content='b'))
-            l.append(mdUnorderedListItem(content='c'))
-            l.append(mdUnorderedListItem(content='d'))
+                l = mdUnorderedList(content='a')
+                l.merge(mdUnorderedList(content='b'))
+                l.append(mdUnorderedListItem(content='c'))
+                l.append(mdUnorderedListItem(content='d'))
 
-            self.append(l)
-        }_
+                self.append(l)
+            }_
 
-        _{ aafigure
-                              "R1"  
-                             +----+   
-                     +-------+    +----+ 
-                ^    |       +----+    |        ^
-                |    |                +++       |
-                |   -+-               | |       |
-             "U"|                     | | "R2"  |"V = U (R2/R1+R2)"
-                |   -+-               | |       |
-                     |                +++  
-                     |                 |
-                     +-----------------+
-        }_
+
+        # aafigure plugin
+            _{ aafigure
+                                  "R1"  
+                                 +----+   
+                         +-------+    +----+ 
+                    ^    |       +----+    |        ^
+                    |    |                +++       |
+                    |   -+-               | |       |
+                 "U"|                     | | "R2"  |"V = U (R2/R1+R2)"
+                    |   -+-               | |       |
+                         |                +++  
+                         |                 |
+                         +-----------------+
+            }_
 
     # Summary
         
