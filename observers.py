@@ -130,8 +130,16 @@ class HtmlDocObserver(filterableObserver):
                         '            <header>',
                         '                <div />',
                         '            </header>',
+                        '            <div class="container-fluid">',
+                        '                <div class="row">',
+                        '                    <div class="panel panel-default">',
+                        '                        <div class="panel-body">',
                     ]
-        after =     [   '        </article>',
+        after =     [   '                        </div>',
+                        '                    </div>',
+                        '                </div>',
+                        '            </div>',
+                        '        </article>',
                         '    </body>',
                         '</html>',
                     ]
