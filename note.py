@@ -110,7 +110,7 @@ class note(object):
             print 'Serving %s' % str(self.filePath)
             # Plug html observer
             doc = parser.load(self.filePath)
-            obs = observers.HtmlDocObserver()
+            obs = observers.HtmlDocObserver(localRessources=True)
             doc.addObserver(obs)
             doc.doc()
             tmpFile = tempfile.NamedTemporaryFile(suffix='.html')
