@@ -114,7 +114,6 @@ class HtmlDocObserver(filterableObserver):
                         '    <!-- Not supported yet -->',
                         '    <head>',
                         '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="%s" />' % self.cssPath.format(style=self.style),
                         '        <!-- Latest compiled and minified CSS -->',
                         '        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">',
                         '',
@@ -123,6 +122,8 @@ class HtmlDocObserver(filterableObserver):
                         '',
                         '        <!-- Latest compiled and minified JavaScript -->',
                         '        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>',
+                        '',
+                        '        <link rel="stylesheet" href="%s" />' % self.cssPath.format(style=self.style),
                         '    </head>',
                         '    <body>',
                         '        <article>',

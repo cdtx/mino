@@ -99,6 +99,7 @@ MINO documentation
         # graphviz
             _{ graphviz
                 digraph {
+                    bgcolor="transparent";
                     A->B->C
                 }
             }_

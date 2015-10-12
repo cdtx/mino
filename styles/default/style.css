@@ -2,15 +2,9 @@ body {
     margin-left: 1px;
     margin-right: 1px;
     font-family: "Courier New", Courier, monospace;
+    background-color: beige;
+    color: black;
 }
-
-
-
-strong, b {
-    font-size: large;
-}
-
-
 
 header div{
     background-size: 100%;
@@ -23,10 +17,10 @@ header div{
 // h1:before {
 //     content: counter(h1) ". ";
 // }
-// h1 {
-//     color: darkcyan;
-//     font-size: xx-large;
-// }
+h1 {
+    color: blue;
+    font-size: xx-large;
+}
 
 
 .minoParagraph2 {
@@ -102,7 +96,7 @@ h7 {
 
 
 h2, h3, h4, h5, h6, h7, h8{
-    color: darkcyan;
+    color: forestgreen;
 }
 p {
     /* border: solid rgb(0, 61, 255); */
@@ -110,7 +104,6 @@ p {
     text-align: justify;
     margin-left: 2%;
     margin-right: 2%;
-    color: black
 }
 
 
