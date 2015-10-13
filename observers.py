@@ -84,6 +84,7 @@ class DumbObserver(filterableObserver):
 
 class FactoryBasedFilterableObserver(filterableObserver):
     def __init__(self, localRessources=False):
+        self.titleLevel = 1
         filterableObserver.__init__(self)
 
     def __str__(self):
@@ -115,8 +116,10 @@ class FactoryBasedFilterableObserver(filterableObserver):
             filterableObserver.update(self, issuer, event, message)
 
     def updateStart(self, issuer, event, message):
+        ''' update called on the start of an element, accepted by filter '''
         pass
     def updateStop(self, issuer, event, message):
+        ''' update called on the stop of an element, accepted by filter '''
         pass
 
     def functionFactory(self, issuer, event):
@@ -162,14 +165,52 @@ class FactoryBasedFilterableObserver(filterableObserver):
 
 class MarkdownObserver(FactoryBasedFilterableObserver):
     ''' Exports a mino written document to common markdown '''
-    pass
+    def __init__(self):
+        FactoryBasedFilterableObserver.__init__(self)
+        self.str = ''
 
+    def updateStart(self, issuer, event, message):
+        self.functionFactory(issuer, event)
+    def updateStop(self, issuer, event, message):
+        pass
+
+    def mdRootDoc(self, issuer):
+        print 'Good'
+    def mdEmptyLine(self, issuer):
+        print 'Good'
+    def mdTitle(self, issuer, level):
+        print 'Good'
+    def mdDocumentTitle(self, issuer):
+        print 'Good'
+    def mdTextLine(self, issuer):
+        print 'Good'
+    def mdListItem(self, issuer):
+        print 'Good'
+    def mdOrderedList(self, issuer):
+        print 'Good'
+    def mdOrderedListItem(self, issuer):
+        print 'Good'
+    def mdUnorderedList(self, issuer):
+        print 'Good'
+    def mdUnorderedListItem(self, issuer):
+        print 'Good'
+    def mdTable(self, issuer):
+        print 'Good'
+    def mdTableLine(self, issuer):
+        print 'Good'
+    def mdBlocOfCode(self, issuer):
+        print 'Good'
+    def mdPlugin(self, issuer):
+        print 'Good'
+    def mdLink(self, issuer):
+        print 'Good'
+    def mdImage(self, issuer):
+        print 'Good'
 
 class HtmlDocObserver(FactoryBasedFilterableObserver):
     def __init__(self, localRessources=False):
         FactoryBasedFilterableObserver.__init__(self)
         self.indent = 0
-        self.titleLevel = 1
         self.style = 'default'
         self.str = ''
         self.basePath = os.path.dirname(__file__)
