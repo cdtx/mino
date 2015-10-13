@@ -465,34 +465,21 @@ class SlidesObserver(HtmlDocObserver):
 
         return (before, after)
 
-    def update(self, issuer, event, message):
-        if event == 'mino/doc/start':
-            filterableObserver.update(self, issuer, event, message)
+    def updateStart(self, issuer, event, message):
+        if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
+             (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
 
-        if not filterableObserver.accept(self, issuer, event, message):
-            if event == 'mino/doc/stop':
-                filterableObserver.update(self, issuer, event, message)
-            return
-        # Here in the update method, we only build a list of elements that will participate in the slide set
-        if event == 'mino/doc/start':
-            if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
-                 (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
-
-                if self.slidesInProgress == 0:
-                    self.slidesInProgress = 1
-                    self.slidesList.append([issuer, []])
-                elif self.slidesInProgress == 1:
-                    self.slidesList[-1][1].append(issuer)
-                else:
-                    print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+            if self.slidesInProgress == 0:
+                self.slidesInProgress = 1
+                self.slidesList.append([issuer, []])
+            elif self.slidesInProgress == 1:
+                self.slidesList[-1][1].append(issuer)
+            else:
+                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
                 
-
-        if event == 'mino/doc/stop':
-            if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
-                    self.slidesInProgress = 0
-
-        if event == 'mino/doc/stop':
-            filterableObserver.update(self, issuer, event, message)
+    def updateStop(self, issuer, event, message):
+        if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
+            self.slidesInProgress = 0
 
     def toFile(self, fileName):
         self.createHtml()
