@@ -81,9 +81,93 @@ class DumbObserver(filterableObserver):
         super(DumbObserver, self).update(issuer, event, message)
         print issuer, event, message
         
-class HtmlDocObserver(filterableObserver):
+
+class FactoryBasedFilterableObserver(filterableObserver):
     def __init__(self, localRessources=False):
         filterableObserver.__init__(self)
+
+    def __str__(self):
+        return self.str
+    
+    def toFile(self, fileName):
+        with open(fileName, 'w') as f:
+            f.write(self.str)
+
+    def update(self, issuer, event, message):
+        # Update the filters
+        if event == 'mino/doc/start':
+            filterableObserver.update(self, issuer, event, message)
+
+        # If not accepted element, update the filter anyway then return
+        if not filterableObserver.accept(self, issuer, event, message):
+            if event == 'mino/doc/stop':
+                filterableObserver.update(self, issuer, event, message)
+            return
+
+        # Distinct start and stop event
+        if event == 'mino/doc/start':
+            self.updateStart(issuer, event, message)
+        elif event == 'mino/doc/stop':
+            self.updateStop(issuer, event, message)
+
+        # Update the filters
+        if event == 'mino/doc/stop':
+            filterableObserver.update(self, issuer, event, message)
+
+    def updateStart(self, issuer, event, message):
+        pass
+    def updateStop(self, issuer, event, message):
+        pass
+
+    def functionFactory(self, issuer, event):
+        if isinstance(issuer, parser.mdRootDoc):
+            return self.mdRootDoc(issuer)
+        elif isinstance(issuer, parser.mdEmptyLine):
+            return self.mdEmptyLine(issuer)
+        elif isinstance(issuer, parser.mdDocumentTitle):
+            return self.mdDocumentTitle(issuer)
+        elif isinstance(issuer, parser.mdTitle):
+            if event == 'mino/doc/start':
+                self.titleLevel += 1
+            elif event == 'mino/doc/stop':
+                self.titleLevel -= 1
+            return self.mdTitle(issuer, self.titleLevel)
+        elif isinstance(issuer, parser.mdTextLine):
+            return self.mdTextLine(issuer)
+            
+        elif isinstance(issuer, parser.mdOrderedList):
+            return self.mdOrderedList(issuer)
+        elif isinstance(issuer, parser.mdListItem):
+            return self.mdListItem(issuer)
+            
+        elif isinstance(issuer, parser.mdUnorderedList):
+            return self.mdUnorderedList(issuer)
+        elif isinstance(issuer, parser.mdListItem):
+            return self.mdListItem(issuer)
+            
+        elif isinstance(issuer, parser.mdTable):
+            return self.mdTable(issuer)
+        elif isinstance(issuer, parser.mdTableLine):
+            return self.mdTableLine(issuer)
+        elif isinstance(issuer, parser.mdBlocOfCode):
+            return self.mdBlocOfCode(issuer)
+        elif isinstance(issuer, parser.mdPlugin):
+            return self.mdPlugin(issuer)
+        elif isinstance(issuer, parser.mdImage):
+            return self.mdImage(issuer)
+        elif isinstance(issuer, parser.mdLink):
+            return self.mdLink(issuer)
+        else:
+            raise Exception('Unknown element [%s]' % str(issuer))
+
+class MarkdownObserver(FactoryBasedFilterableObserver):
+    ''' Exports a mino written document to common markdown '''
+    pass
+
+
+class HtmlDocObserver(FactoryBasedFilterableObserver):
+    def __init__(self, localRessources=False):
+        FactoryBasedFilterableObserver.__init__(self)
         self.indent = 0
         self.titleLevel = 1
         self.style = 'default'
@@ -92,21 +176,12 @@ class HtmlDocObserver(filterableObserver):
         self.localRessources = localRessources        
 
         self.generateResourcesPath()
-        
-    def __str__(self):
-        return self.str
     
     def generateResourcesPath(self):
         if not self.localRessources:
             self.cssPath = r'https://rawgit.com/cdtx/mino/master/styles/{style}/style.css'
         else:
             self.cssPath = r'%s/styles/{style}/style.css' % self.basePath
-
-
-
-    def toFile(self, fileName):
-        with open(fileName, 'w') as f:
-            f.write(self.str)
 
     def mdRootDoc(self, issuer):
         before =    [   '<!doctype html>',
@@ -148,12 +223,12 @@ class HtmlDocObserver(filterableObserver):
     def mdEmptyLine(self, issuer):
         return (['<br>'], [])
         
-    def mdTitle(self, issuer):
+    def mdTitle(self, issuer, level):
         before =    [   
-                        '    <div class="minoParagraph%d" %s>' % (self.titleLevel, self.groupExtraParams(issuer)),
-                        '    <h%d %s>' % (self.titleLevel, self.extraParams(issuer)),
+                        '    <div class="minoParagraph%d" %s>' % (level, self.groupExtraParams(issuer)),
+                        '    <h%d %s>' % (level, self.extraParams(issuer)),
                         '        %s' % self.htmlReplaceInline(issuer.title),
-                        '    </h%d>' % (self.titleLevel),
+                        '    </h%d>' % (level),
                     ]
         after =     [   '    </div>',
                     ]
@@ -241,66 +316,14 @@ class HtmlDocObserver(filterableObserver):
             return ''
         return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.groupExtraParams.all.iteritems()])
 
-    def functionFactory(self, issuer, event):
-        if isinstance(issuer, parser.mdRootDoc):
-            return self.mdRootDoc(issuer)
-        elif isinstance(issuer, parser.mdEmptyLine):
-            return self.mdEmptyLine(issuer)
-        elif isinstance(issuer, parser.mdDocumentTitle):
-            return self.mdDocumentTitle(issuer)
-        elif isinstance(issuer, parser.mdTitle):
-            if event == 'mino/doc/start':
-                self.titleLevel += 1
-            elif event == 'mino/doc/stop':
-                self.titleLevel -= 1
-            return self.mdTitle(issuer)
-        elif isinstance(issuer, parser.mdTextLine):
-            return self.mdTextLine(issuer)
-            
-        elif isinstance(issuer, parser.mdOrderedList):
-            return self.mdOrderedList(issuer)
-        elif isinstance(issuer, parser.mdListItem):
-            return self.mdListItem(issuer)
-            
-        elif isinstance(issuer, parser.mdUnorderedList):
-            return self.mdUnorderedList(issuer)
-        elif isinstance(issuer, parser.mdListItem):
-            return self.mdListItem(issuer)
-            
-        elif isinstance(issuer, parser.mdTable):
-            return self.mdTable(issuer)
-        elif isinstance(issuer, parser.mdTableLine):
-            return self.mdTableLine(issuer)
-        elif isinstance(issuer, parser.mdBlocOfCode):
-            return self.mdBlocOfCode(issuer)
-        elif isinstance(issuer, parser.mdPlugin):
-            return self.mdPlugin(issuer)
-        elif isinstance(issuer, parser.mdImage):
-            return self.mdImage(issuer)
-        elif isinstance(issuer, parser.mdLink):
-            return self.mdLink(issuer)
-        else:
-            raise Exception('Unknown element [%s]' % str(issuer))
-    
-    def update(self, issuer, event, message):
-        if event == 'mino/doc/start':
-            super(HtmlDocObserver, self).update(issuer, event, message)
-
-        if not filterableObserver.accept(self, issuer, event, message):
-            if event == 'mino/doc/stop':
-                super(HtmlDocObserver, self).update(issuer, event, message)
-            return
-        if event == 'mino/doc/start':
-            linesBefore = self.functionFactory(issuer, event)[0]
-            self.htmlAppend(linesBefore)
-            self.indent += 1
-        elif event == 'mino/doc/stop':
-            self.indent -= 1
-            linesAfter = self.functionFactory(issuer, event)[1]
-            self.htmlAppend(linesAfter)
-
-        if event == 'mino/doc/stop':
-            super(HtmlDocObserver, self).update(issuer, event, message)
+    def updateStart(self, issuer, event, message):
+        linesBefore = self.functionFactory(issuer, event)[0]
+        self.htmlAppend(linesBefore)
+        self.indent += 1
+    def updateStop(self, issuer, event, message):
+        self.indent -= 1
+        linesAfter = self.functionFactory(issuer, event)[1]
+        self.htmlAppend(linesAfter)
 
     def htmlAppend(self, lst):
         self.str += '\n'.join([(' '*4*self.indent + x) for x in lst]) + '\n'
