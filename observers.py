@@ -163,6 +163,40 @@ class FactoryBasedFilterableObserver(filterableObserver):
         else:
             raise Exception('Unknown element [%s]' % str(issuer))
 
+
+    def mdRootDoc(self, issuer):
+        return ''
+    def mdEmptyLine(self, issuer):
+        return ''
+    def mdTitle(self, issuer, level):
+        return ''
+    def mdDocumentTitle(self, issuer):
+        return ''
+    def mdTextLine(self, issuer):
+        return ''
+    def mdListItem(self, issuer):
+        return ''
+    def mdOrderedList(self, issuer):
+        return ''
+    def mdOrderedListItem(self, issuer):
+        return ''
+    def mdUnorderedList(self, issuer):
+        return ''
+    def mdUnorderedListItem(self, issuer):
+        return ''
+    def mdTable(self, issuer):
+        return ''
+    def mdTableLine(self, issuer):
+        return ''
+    def mdBlocOfCode(self, issuer):
+        return ''
+    def mdPlugin(self, issuer):
+        return ''
+    def mdLink(self, issuer):
+        return ''
+    def mdImage(self, issuer):
+        return ''
+
 class MarkdownObserver(FactoryBasedFilterableObserver):
     ''' Exports a mino written document to common markdown '''
     def __init__(self):
@@ -170,42 +204,53 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         self.str = ''
 
     def updateStart(self, issuer, event, message):
-        self.functionFactory(issuer, event)
+        self.str += self.functionFactory(issuer, event)
     def updateStop(self, issuer, event, message):
-        pass
+        self.functionFactory(issuer, event)
 
-    def mdRootDoc(self, issuer):
-        print 'Good'
     def mdEmptyLine(self, issuer):
-        print 'Good'
+        return ''
     def mdTitle(self, issuer, level):
-        print 'Good'
+        return '%s %s'% ('#'*level, self.replaceInline(issuer.content)) + '\n'
     def mdDocumentTitle(self, issuer):
-        print 'Good'
+        return ''
     def mdTextLine(self, issuer):
-        print 'Good'
+        return self.replaceInline(issuer.content) + '\n\n'
     def mdListItem(self, issuer):
-        print 'Good'
+        return ''
     def mdOrderedList(self, issuer):
-        print 'Good'
+        return ''
     def mdOrderedListItem(self, issuer):
-        print 'Good'
+        return '1. %s' % self.replaceInline(issuer.content)
     def mdUnorderedList(self, issuer):
-        print 'Good'
+        return ''
     def mdUnorderedListItem(self, issuer):
-        print 'Good'
+        return '- %s' % self.replaceInline(issuer.content)
     def mdTable(self, issuer):
-        print 'Good'
+        return ''
     def mdTableLine(self, issuer):
-        print 'Good'
+        return ''
     def mdBlocOfCode(self, issuer):
-        print 'Good'
+        return ''
     def mdPlugin(self, issuer):
-        print 'Good'
+        return ''
     def mdLink(self, issuer):
-        print 'Good'
+        return '[%s](%s)\n' % (issuer.caption, issuer.url)
     def mdImage(self, issuer):
-        print 'Good'
+        return ''
+
+    def replaceInline(self, content):
+        repl = {'bold':r'**\1**',
+                'italic':r'_\1_',
+                'underlined':r'\1',
+                'link':r'<a href="\1">\2</a>',
+        }
+                
+        content = content.replace('\n', '<br/>')
+        for (pat, opt, type) in inlinePatterns:
+            if type in repl.keys():
+                content = re.sub(pat, repl[type], content, flags=opt)
+        return content
 
 class HtmlDocObserver(FactoryBasedFilterableObserver):
     def __init__(self, localRessources=False):
