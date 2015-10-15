@@ -259,7 +259,7 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         repl = {'bold':r'**\1**',
                 'italic':r'_\1_',
                 'underlined':r'\1',
-                'link':r'<a href="\1">\2</a>',
+                'link':r'[\2](\1)',
         }
                 
         content = content.replace('\n', '<br/>')

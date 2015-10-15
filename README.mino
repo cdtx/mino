@@ -20,7 +20,7 @@ MINO documentation
                 Paragraph under the title 2.1
                 
     # Lorem ipsum
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
+        Lorem ipsum dolor sit amet, !(http://google.fr)(Google) consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
 
 
 
