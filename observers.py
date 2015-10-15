@@ -231,7 +231,11 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
     def mdTableLine(self, issuer):
         return ''
     def mdBlocOfCode(self, issuer):
-        return ''
+        return '\n'.join( [
+                            "'''%s" % issuer.lang,
+                            issuer.content,
+                            "'''",
+        ])
     def mdPlugin(self, issuer):
         return ''
     def mdLink(self, issuer):
