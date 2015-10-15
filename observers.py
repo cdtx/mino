@@ -202,6 +202,7 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
     def __init__(self):
         FactoryBasedFilterableObserver.__init__(self)
         self.str = ''
+        self.prepareTable = None
 
     def updateStart(self, issuer, event, message):
         self.str += self.functionFactory(issuer, event)
@@ -216,32 +217,35 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         return ''
     def mdTextLine(self, issuer):
         return self.replaceInline(issuer.content) + '\n\n'
-    def mdListItem(self, issuer):
-        return ''
-    def mdOrderedList(self, issuer):
-        return ''
     def mdOrderedListItem(self, issuer):
         return '1. %s' % self.replaceInline(issuer.content)
-    def mdUnorderedList(self, issuer):
-        return ''
     def mdUnorderedListItem(self, issuer):
         return '- %s' % self.replaceInline(issuer.content)
     def mdTable(self, issuer):
+        # Assume (strong) all rows have the same number of elements
+        # Return nothing but prepare the table sub-header
+        self.prepareTable = ' | '.join(['---'] * len(issuer.childs[0].elements))
         return ''
+
     def mdTableLine(self, issuer):
-        return ''
+        s = ' | '.join(issuer.elements) + '\n'
+        if self.prepareTable:
+            s += self.prepareTable + '\n'
+            self.prepareTable = None
+        return s
+
     def mdBlocOfCode(self, issuer):
         return '\n'.join( [
-                            "'''%s" % issuer.lang,
-                            issuer.content,
-                            "'''",
-        ])
+                            "```%s" % issuer.lang,
+                            issuer.text,
+                            "```",
+        ]) + '\n\n'
     def mdPlugin(self, issuer):
         return ''
     def mdLink(self, issuer):
         return '[%s](%s)\n' % (issuer.caption, issuer.url)
     def mdImage(self, issuer):
-        return ''
+        return '![%s](%s)\n' % (issuer.caption, issuer.url)
 
     def replaceInline(self, content):
         repl = {'bold':r'**\1**',
