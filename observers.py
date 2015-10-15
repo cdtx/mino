@@ -205,9 +205,17 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         self.prepareTable = None
 
     def updateStart(self, issuer, event, message):
-        self.str += self.functionFactory(issuer, event)
+        res = self.functionFactory(issuer, event)
+        # functionFactory can return single string or (begin, end) tuple
+        if isinstance(res, tuple) or isinstance(res, list):
+            self.str += res[0]
+        else:
+            self.str += res
     def updateStop(self, issuer, event, message):
-        self.functionFactory(issuer, event)
+        res = self.functionFactory(issuer, event)
+        # functionFactory can return single string or (begin, end) tuple
+        if isinstance(res, tuple) or isinstance(res, list):
+            self.str += res[1]
 
     def mdEmptyLine(self, issuer):
         return ''
@@ -225,7 +233,7 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         # Assume (strong) all rows have the same number of elements
         # Return nothing but prepare the table sub-header
         self.prepareTable = ' | '.join(['---'] * len(issuer.childs[0].elements))
-        return ''
+        return ('', '\n')
 
     def mdTableLine(self, issuer):
         s = ' | '.join(issuer.elements) + '\n'
@@ -243,9 +251,9 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
     def mdPlugin(self, issuer):
         return ''
     def mdLink(self, issuer):
-        return '[%s](%s)\n' % (issuer.caption, issuer.url)
+        return '[%s](%s)\n' % (issuer.caption, issuer.url) + '\n'
     def mdImage(self, issuer):
-        return '![%s](%s)\n' % (issuer.caption, issuer.url)
+        return '![%s](%s)\n' % (issuer.caption, issuer.url) + '\n'
 
     def replaceInline(self, content):
         repl = {'bold':r'**\1**',
