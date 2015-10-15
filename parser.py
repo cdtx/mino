@@ -526,7 +526,7 @@ linePatterns = (
     
 inlinePatterns = (
     (r'\*\*(.*?)\*\*', re.IGNORECASE, 'bold'),
-    (r'//(.*?)//', re.IGNORECASE, 'italic'),
+    (r'[^:]//(.*?)[^:]//', re.IGNORECASE, 'italic'), # Ensure // aren't part of urls
     (r'__(.*?)__', re.IGNORECASE, 'underlined'),
     (r'--(.*?)--', re.IGNORECASE, 'scratched'),
     (r'!\((.*?)\)\((.*?)\)', re.IGNORECASE, 'link'),
