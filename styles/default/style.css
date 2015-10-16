@@ -2,8 +2,11 @@ body {
     margin-left: 1px;
     margin-right: 1px;
     font-family: "Courier New", Courier, monospace;
-    background-color: beige;
     color: black;
+}
+
+.panel {
+    background-color:  grey;   
 }
 
 header div{
@@ -18,7 +21,7 @@ header div{
 //     content: counter(h1) ". ";
 // }
 h1 {
-    color: blue;
+    color: darkblue;
     font-size: xx-large;
 }
 
@@ -96,7 +99,7 @@ h7 {
 
 
 h2, h3, h4, h5, h6, h7, h8{
-    color: forestgreen;
+    color: darkblue;
 }
 p {
     /* border: solid rgb(0, 61, 255); */
@@ -115,6 +118,9 @@ ol {
     position: relative;
 }
 
+a {
+    color: blue;   
+}
 
 
 table{
