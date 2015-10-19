@@ -274,7 +274,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
         self.indent = 0
         self.style = 'default'
         self.str = ''
-        self.basePath = os.path.dirname(__file__)
+        self.basePath = os.path.abspath(os.path.dirname(__file__))
         self.localRessources = localRessources        
 
         self.generateResourcesPath()
