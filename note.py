@@ -105,18 +105,23 @@ class note(object):
         except:
             print 'Invalid edition request'
 
-    def serve(self):
+    def createHTML(self, fileName=None, openAfter=False):
+        '''
+        If a file name is specified, just create it, else create a random tmp file then invoke the browser to open it.        
+        '''
         try:
-            print 'Serving %s' % str(self.filePath)
             # Plug html observer
             doc = parser.load(self.filePath)
             obs = observers.HtmlDocObserver(localRessources=True)
             doc.addObserver(obs)
             doc.doc()
-            tmpFile = tempfile.NamedTemporaryFile(suffix='.html')
-            tmpFile.close()
-            obs.toFile(tmpFile.name)
-            webbrowser.open('file:///' + tmpFile.name)
+            if not fileName:
+                tmpFile = tempfile.NamedTemporaryFile(suffix='.html')
+                fileName = tmpFile.name
+                tmpFile.close()
+            obs.toFile(fileName)
+            if openAfter:
+                webbrowser.open('file:///' + os.path.abspath(fileName))
         except Exception as e :
             print 'An error occurs, cannot serve', e
 
@@ -227,8 +232,10 @@ def call_search(mgr, args):
     # If an edition is requested
     if args.edit != None:
         matching[args.edit].edit()
-    elif args.serve != None:
-        matching[args.serve].serve()
+    if args.view != None:
+        matching[int(args.view[0])].createHTML(args.view[1], openAfter=True)
+    if args.export != None:
+        matching[int(args.export[0])].createHTML(args.export[1], openAfter=False)
 
 def call_remote_add(mgr, args):
     if not args.name:
@@ -282,7 +289,8 @@ if __name__ == '__main__':
     parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_search.add_argument('words', type=str, nargs='*', help='The words to look for, can be empty for listing the whole notes')
     parser_search.add_argument('--edit', type=int, const=0, nargs='?', help='Open the first or specified note in the default text editor')
-    parser_search.add_argument('--serve', type=int, const=0, nargs='?', help='Open the first or specified note in the default webbrowser')
+    parser_search.add_argument('--view', nargs=2, help='Open the specified note in the default webbrowser')
+    parser_search.add_argument('--export', nargs=2, help='Creates a single html file for this note')
     parser_search.set_defaults(func=call_search)
 
     # The remote parser
