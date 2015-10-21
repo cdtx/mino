@@ -385,7 +385,8 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
     
     def mdBlocOfCode(self, issuer):
         # See for using http://prismjs.com/index.html
-        return ([highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True))], [])
+        res = ([str(highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True)))], [])
+        return res
     
     def mdPlugin(self, issuer):
         before =    [   '<div %s>' % self.extraParams(issuer),
