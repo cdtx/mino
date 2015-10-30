@@ -24,3 +24,4 @@ Output formats can be :
 - Reveal.js
 - plantuml python package (for plantuml plugin)
 - pydot2 python package, and graphviz installed (for graphviz plugin)
+- aafigure for ascii art drawing

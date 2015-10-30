@@ -555,7 +555,7 @@ def usage():
     print '''mino.py FILE'''
 
 if __name__ == '__main__':
-    from cdtx.mino.observers import DumbObserver, HtmlDocObserver, PdfDocObserver
+    from cdtx.mino.observers import DumbObserver, HtmlDocObserver
     
     subject().addObserver(DumbObserver())
     html = HtmlDocObserver()
