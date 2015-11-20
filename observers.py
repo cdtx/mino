@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, re
-from copy import copy
+from copy import deepcopy
 
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
@@ -569,16 +569,26 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def updateStart(self, issuer, event, message):
-        if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
-             (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
-
+        candidate = None
+        if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary')):
             if self.slidesInProgress == 0:
                 self.slidesInProgress = 1
                 self.slidesList.append([issuer, []])
             elif self.slidesInProgress == 1:
                 self.slidesList[-1][1].append(issuer)
-            else:
+            else :
                 print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
+        elif (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary'):
+            candidate = deepcopy(issuer)
+            candidate.childs = []
+            if self.slidesInProgress == 0:
+                self.slidesList.append([candidate, []])
+            elif self.slidesInProgress == 1:
+                self.slidesList[-1][1].append(candidate)
+            else :
+                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
                 
     def updateStop(self, issuer, event, message):
         if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
