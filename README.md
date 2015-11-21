@@ -1,25 +1,43 @@
-MINO for python
-==============
+_This README.md is itself a demo, as it's generated automatically from mino ;-)_
 
-'MINO, cauz Mino Is Not Office' is a custom markdown syntax for writing documentation, notes, memos.
+## Intro
+MINO is a custom markdown syntax for writing documentation, notes, memos.
+-  It's purely text based, so:
+  -  Doesn't requires heavy software for writing
+  -  Allows managing revisions as usual with git or others tools.
+-  It's indentation based so documents can even be read from the text editor without formating
+-  It supports mixing python code and doc, so the document can be dynamically fed at runtime
+-  It supports various plugins
+-  It's independant from any output format. So one input can generate several outputs (complete pdf paper and summary slides for example)
 
-# Input
+### Why Mino ?
+cauz Mino Is Not Office ;-)
 
-Mino is pure text based
+## How to write MINO
 
-It supports writing text, tabs, source code, etc.
+### MINO Tags
+Documentation coming soon...
 
-# Output
+## MINO plugins
+Documentation coming soon...
 
-Output formats can be :
+## Observability
+Documentation coming soon...
 
-- html (written or served)
-- Presentation slides, thanks to reveal.js
+### Output formats
+-  html
+-  pdf
+-  Presentation slides, thanks to reveal.js
 
-# Dependencies
+## Filtering
+Documentation coming soon...
 
-- pygments (for source syntax coloring)
-- Reveal.js
-- plantuml python package (for plantuml plugin)
-- pydot2 python package, and graphviz installed (for graphviz plugin)
-- aafigure for ascii art drawing
+## Dependencies
+ Name  |  Usage 
+--- | ---
+ pygments  |  source code syntax coloring 
+ Reveal.js  |  slide presentation output 
+ plantuml python package  |  plantuml plugin 
+ pydot2 python package, and graphviz installed  |  for graphviz plugin 
+ weasyprint python package  |  pdf output 
+
