@@ -9,6 +9,7 @@ from cdtx.mino.parser import inlinePatterns
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name 
 from pygments.formatters import HtmlFormatter
+import weasyprint
 
 from pdb import set_trace
 
@@ -442,7 +443,8 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
             if type in repl.keys():
                 content = re.sub(pat, repl[type], content, flags=opt)
         return content
-            
+          
+
 class SlidesObserver(HtmlDocObserver):
     '''
     Using reveal.js, slides generation becomes a special case of html generation
