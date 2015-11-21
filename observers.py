@@ -231,14 +231,28 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         return self.replaceInline(issuer.content) + '\n'
 
     def mdOrderedList(self, issuer, event):
-        pass    
+        if event.endswith('start'):
+            self.nestedOrderedListIndex += 1
+        elif event.endswith('stop'):
+            self.nestedOrderedListIndex -= 1
+        return FactoryBasedFilterableObserver.mdOrderedList(self, issuer, event)
+
     def mdOrderedListItem(self, issuer, event):
-        return '1. %s' % self.replaceInline(issuer.content) + '\n'
+        return '%s1. %s' % ('  '*self.nestedUnorderedListIndex, 
+                            self.replaceInline(issuer.content)
+        ) + '\n'
     
     def mdUnorderedList(self, issuer, event):
-        pass
+        if event.endswith('start'):
+            self.nestedUnorderedListIndex += 1
+        elif event.endswith('stop'):
+            self.nestedUnorderedListIndex -= 1
+        return FactoryBasedFilterableObserver.mdUnorderedList(self, issuer, event)
+
     def mdUnorderedListItem(self, issuer, event):
-        return '- %s' % self.replaceInline(issuer.content) + '\n'
+        return '%s- %s' % ('  '*self.nestedUnorderedListIndex,
+                            self.replaceInline(issuer.content)
+        ) + '\n'
     def mdTable(self, issuer, event):
         # Assume (strong) all rows have the same number of elements
         # Return nothing but prepare the table sub-header
@@ -379,7 +393,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
         after =     ['</ul>']
         return (before, after)        
     def mdUnorderedListItem(self, issuer, event):
-        return self.mdListItem(issuer)
+        return self.mdListItem(issuer, event)
         
     def mdTable(self, issuer, event):
         before =    ['<table %s>' % self.extraParams(issuer)]
@@ -419,12 +433,12 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
         after =     [   '</figure>' ]
         return (before, after)
     
-    def extraParams(self, issuer, event):
+    def extraParams(self, issuer):
         if issuer.extraParams == None:
             return ''
         return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.extraParams.all.iteritems()])
              
-    def groupExtraParams(self, issuer, event):
+    def groupExtraParams(self, issuer):
         if issuer.groupExtraParams == None:
             return ''
         return ' '.join(['%s="%s"' % (k,v) for (k,v) in issuer.groupExtraParams.all.iteritems()])
