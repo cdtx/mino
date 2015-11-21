@@ -82,7 +82,7 @@ class note(object):
             try:
                 doc = parser.load(self.filePath)
                 doc.addObserver(keyWordsObserver(self.words))
-                doc.doc()
+                doc.run(plugin=False)
                 self.cksum = self.getHash()
             except:
                 print 'Failed parsing %s' % self.filePath
@@ -114,7 +114,7 @@ class note(object):
             doc = parser.load(self.filePath)
             obs = observers.HtmlDocObserver(localRessources=True)
             doc.addObserver(obs)
-            doc.doc()
+            doc.run(plugin=True)
             if not fileName:
                 tmpFile = tempfile.NamedTemporaryFile(suffix='.html')
                 fileName = tmpFile.name
@@ -226,7 +226,7 @@ def call_search(mgr, args):
             print matching.index(v), k
             doc = parser.load(v.filePath)
             doc.addObserver(printTitleAndKeywordsMatchingObserver(toFind))
-            doc.doc()
+            doc.run(plugin=False)
             print ''
 
     # If an edition is requested
