@@ -140,13 +140,13 @@ class FactoryBasedFilterableObserver(filterableObserver):
             
         elif isinstance(issuer, parser.mdOrderedList):
             return self.mdOrderedList(issuer)
-        elif isinstance(issuer, parser.mdListItem):
-            return self.mdListItem(issuer)
+        elif isinstance(issuer, parser.mdOrderedListItem):
+            return self.mdOrderedListItem(issuer)
             
         elif isinstance(issuer, parser.mdUnorderedList):
             return self.mdUnorderedList(issuer)
-        elif isinstance(issuer, parser.mdListItem):
-            return self.mdListItem(issuer)
+        elif isinstance(issuer, parser.mdUnorderedListItem):
+            return self.mdUnorderedListItem(issuer)
             
         elif isinstance(issuer, parser.mdTable):
             return self.mdTable(issuer)
@@ -226,9 +226,9 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
     def mdTextLine(self, issuer):
         return self.replaceInline(issuer.content) + '\n\n'
     def mdOrderedListItem(self, issuer):
-        return '1. %s' % self.replaceInline(issuer.content)
+        return '1. %s' % self.replaceInline(issuer.content) + '\n'
     def mdUnorderedListItem(self, issuer):
-        return '- %s' % self.replaceInline(issuer.content)
+        return '- %s' % self.replaceInline(issuer.content) + '\n'
     def mdTable(self, issuer):
         # Assume (strong) all rows have the same number of elements
         # Return nothing but prepare the table sub-header
