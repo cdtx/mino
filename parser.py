@@ -471,11 +471,16 @@ class mdPlugin(mdElement):
         output = self.output
         # If the aim is to execute python, it must be called inside this module so that it has 
         # access to the whole context
-        if self.pluginName.lower() == 'python':
-            exec(self.content, locals(), globals())
-        else:
-            self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
-            self.plugin.run(self.content, self.output, globals(), locals())
+        try:
+            if self.pluginName.lower() == 'python':
+                exec(self.content, locals(), globals())
+            else:
+                self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
+                self.plugin.run(self.content, self.output, globals(), locals())
+
+        except:
+            traceback.print_exc()
+            self.log('mino/parser/error', traceback.format_exc())
 
 
 
