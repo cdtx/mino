@@ -6,10 +6,11 @@ from copy import copy
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
 
-from pygments import highlight
+import pygments
+import pygments.styles
 from pygments.lexers import get_lexer_by_name 
 from pygments.formatters import HtmlFormatter
-import weasyprint
+# import weasyprint
 
 from pdb import set_trace
 
@@ -385,7 +386,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
     
     def mdBlocOfCode(self, issuer):
         # See for using http://prismjs.com/index.html
-        res = ([str(highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True)))], [])
+        res = ([str(pygments.highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True, style=pygments.styles.get_style_by_name('monokai'))))], [])
         return res
     
     def mdPlugin(self, issuer):
@@ -589,7 +590,7 @@ class SlidesObserver(HtmlDocObserver):
         HtmlDocObserver.toFile(self, fileName)
 
     def createHtml(self):
-        self.htmlAppend(self.mdRootDoc(None)[0])
+        self.htmlAppend(self.mdRootDoc(None, '')[0])
 
         for slide in self.slidesList:
             if slide[1] == []:
@@ -608,7 +609,7 @@ class SlidesObserver(HtmlDocObserver):
 
                 self.htmlAppend(['</section>'])
         
-        self.htmlAppend(self.mdRootDoc(None)[1])
+        self.htmlAppend(self.mdRootDoc(None, '')[1])
 
     def recursiveDoc(self, elem):
         self.htmlAppend(self.functionFactory(elem, 'mino/doc/start')[0])
