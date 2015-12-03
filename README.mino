@@ -19,7 +19,7 @@ MINO documentation
             # Title 2.1
                 Paragraph under the title 2.1
                 
-    # Lorem ipsum
+    # Lorem ipsum  [type=summary]
         Lorem ipsum dolor sit amet, !(http://google.fr)(Google) consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
 
 
@@ -172,9 +172,19 @@ MINO documentation
         # Simple page
             That chapter contains a very simple summary that fits on one slide
 
+        # Chapter I don't care
+            Content I don't care
+            - list
+            - I
+            - don't
+            - care
+
         [type=summary]
         # Second simple page
             That chapter contains a very simple summary that fits on one slide
+
+            # Nested page
+                That I care
 
         [type=summary]
         # Complex slide set

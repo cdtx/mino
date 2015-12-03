@@ -135,10 +135,10 @@ class mdElement:
     def merge(self, elem):
         pass
     
-    def doc(self):
+    def run(self, plugin=True):
         self.log('mino/doc/start')
         for x in self.childs:
-            x.doc()
+            x.run(plugin)
         self.log('mino/doc/stop')
 
 class mdRootDoc(mdElement):
@@ -461,20 +461,27 @@ class mdPlugin(mdElement):
             self.content = '\n'.join(x[(self._indent() + 1) * self.indentSize:] for x in self.content.split('\n'))
         else:
             self.content = self.content
-    
-        # DEBUG
-        self.run()
 
-    def run(self):
+    def run(self, plugin):
+        if plugin:
+            self.execute()
+
+    def execute(self):
         self.output.truncate(0)
         output = self.output
         # If the aim is to execute python, it must be called inside this module so that it has 
         # access to the whole context
-        if self.pluginName.lower() == 'python':
-            exec(self.content, locals(), globals())
-        else:
-            self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
-            self.plugin.run(self.content, self.output, globals(), locals())
+        try:
+            if self.pluginName.lower() == 'python':
+                exec(self.content, locals(), globals())
+            else:
+                self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
+                self.plugin.run(self.content, self.output, globals(), locals())
+
+        except:
+            traceback.print_exc()
+            self.log('mino/parser/error', traceback.format_exc())
+
 
 
 class mdLink(mdElement):
@@ -567,7 +574,7 @@ if __name__ == '__main__':
         if os.path.exists(sys.argv[1]):
             doc = load(sys.argv[1])
             # Run a doc loop
-            doc.doc()
+            doc.run()
             html.toFile('index.html')
             pdf.toFile('out.pdf')
         else:
