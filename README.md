@@ -16,7 +16,88 @@ cauz Mino Is Not Office ;-)
 ## How to write MINO
 
 ### MINO Tags
-Documentation coming soon...
+-  Document title
+Example :
+```text
+My doc title
+============
+
+```
+
+-  Chapter title
+The nested level is based on the element indentation
+```text
+# Chaper title
+
+```
+
+-  Simple text
+As simple as it looks.
+-  Unordered list
+Example :
+```text
+- one
+- two
+- three
+
+```
+
+-  Ordered list
+The numbering has no actual impact
+```text
+1. one
+1. two
+1. three
+
+```
+
+-  Table
+Example :
+```text
+| x | y |
+| 1 | 1 |
+| 2 | 4 |
+| 3 | 9 |
+
+```
+
+-  Bloc of code
+Example :
+```text
+` ` ` the-language-name (cpp, python, javascript, text, ...)
+    #include <xxx>
+    ...
+` ` `
+
+```
+
+-  Link
+Example :
+```text
+!(www.google.fr)(Visit Google)
+
+```
+
+-  Image
+Example :
+```text
+!(https://i.ytimg.com/vi/oM1EVAYahFE/maxresdefault.jpg)(Visit me)
+
+```
+
+-  Plugin invokation
+Example :
+```text
+_{ python
+    x = 3 + 3
+}_
+...
+_{ python
+    print 'x = ', x 
+}_
+
+```
+
 
 ## MINO plugins
 Documentation coming soon...
