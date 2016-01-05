@@ -386,7 +386,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
         after =     ['</ol>']
         return (before, after)
     def mdOrderedListItem(self, issuer, event):
-        return self.mdListItem(issuer)
+        return self.mdListItem(issuer, event)
         
     def mdUnorderedList(self, issuer, event):
         before =    ['<ul %s>' % self.extraParams(issuer) ]
