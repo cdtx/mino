@@ -443,45 +443,6 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
                 content = re.sub(pat, repl[type], content, flags=opt)
         return content
             
-            
-class PdfDocObserver(HtmlDocObserver):
-    '''
-    Using weasyprint, pdf generation becomes a special case of html generation
-    Except the header that changes
-    '''
-    def generateResourcesPath(self):
-        if not self.localRessources:
-            self.cssPath = r'https://rawgit.com/cdtx/mino/master/styles/{style}/pdf.css'
-        else:
-            self.cssPath = r'file://localhost/%s/styles/{style}/pdf.css' % self.basePath
-
-
-    def mdRootDoc(self, issuer):
-        before =    [   '<!doctype html>',
-                        '<html>',
-                        '    <!-- Not supported yet -->',
-                        '    <head>',
-                        '        <meta http-equiv="content-type" content="text/html; charset=utf-8" />'
-                        '        <link rel="stylesheet" href="%s" />' % self.cssPath.format(style=self.style),
-                        '    </head>',
-                        '    <body>',
-                        '        <article>',
-                        '            <header>',
-                        '                <div />',
-                        '            </header>',
-                    ]
-        after =     [   '        </article>',
-                        '    </body>',
-                        '</html>',
-                    ]
-        
-        return (before, after)
-
-    def toFile(self, fileName):
-        weasy = weasyprint.HTML(string=self.str, base_url=os.path.abspath(__file__))    
-        x = weasy.render()
-        weasy.write_pdf(fileName)
-
 class SlidesObserver(HtmlDocObserver):
     '''
     Using reveal.js, slides generation becomes a special case of html generation

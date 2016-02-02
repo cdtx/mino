@@ -559,9 +559,7 @@ if __name__ == '__main__':
     
     subject().addObserver(DumbObserver())
     html = HtmlDocObserver()
-    pdf = PdfDocObserver()
     subject().addObserver(html)
-    subject().addObserver(pdf)
     
     if len(sys.argv) > 1:
         if os.path.exists(sys.argv[1]):
@@ -569,7 +567,6 @@ if __name__ == '__main__':
             # Run a doc loop
             doc.doc()
             html.toFile('index.html')
-            pdf.toFile('out.pdf')
         else:
             usage()
     else:
