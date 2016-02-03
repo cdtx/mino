@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, re
-from copy import deepcopy
+from copy import copy
 
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
@@ -10,7 +10,6 @@ import pygments
 import pygments.styles
 from pygments.lexers import get_lexer_by_name 
 from pygments.formatters import HtmlFormatter
-# import weasyprint
 
 from pdb import set_trace
 
@@ -386,7 +385,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
     
     def mdBlocOfCode(self, issuer):
         # See for using http://prismjs.com/index.html
-        res = ([str(pygments.highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True, style=pygments.styles.get_style_by_name('monokai'))))], [])
+        res = ([str(highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True)))], [])
         return res
     
     def mdPlugin(self, issuer):
@@ -570,26 +569,16 @@ class SlidesObserver(HtmlDocObserver):
         return (before, after)
 
     def updateStart(self, issuer, event, message):
-        candidate = None
-        if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary')):
+        if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
+             (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
+
             if self.slidesInProgress == 0:
                 self.slidesInProgress = 1
                 self.slidesList.append([issuer, []])
             elif self.slidesInProgress == 1:
                 self.slidesList[-1][1].append(issuer)
-            else :
+            else:
                 print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
-
-        elif (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary'):
-            candidate = deepcopy(issuer)
-            candidate.childs = []
-            if self.slidesInProgress == 0:
-                self.slidesList.append([candidate, []])
-            elif self.slidesInProgress == 1:
-                self.slidesList[-1][1].append(candidate)
-            else :
-                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
-
                 
     def updateStop(self, issuer, event, message):
         if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
@@ -600,7 +589,7 @@ class SlidesObserver(HtmlDocObserver):
         HtmlDocObserver.toFile(self, fileName)
 
     def createHtml(self):
-        self.htmlAppend(self.mdRootDoc(None, '')[0])
+        self.htmlAppend(self.mdRootDoc(None)[0])
 
         for slide in self.slidesList:
             if slide[1] == []:
@@ -619,7 +608,7 @@ class SlidesObserver(HtmlDocObserver):
 
                 self.htmlAppend(['</section>'])
         
-        self.htmlAppend(self.mdRootDoc(None, '')[1])
+        self.htmlAppend(self.mdRootDoc(None)[1])
 
     def recursiveDoc(self, elem):
         self.htmlAppend(self.functionFactory(elem, 'mino/doc/start')[0])
