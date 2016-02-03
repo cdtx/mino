@@ -1,0 +1,209 @@
+MINO documentation
+==================
+
+    [chapter=first, 
+    style=
+        color:blue; margin-left:100px]
+    This paper is aimed to be like a full example of what the mino parser can do
+    It should be consistant with the syntax accross dev branches.
+
+    # Titles                
+        # Title 1
+            Paragraph under the title 1
+            # Title 1.1
+                Paragraph under the title 1.1
+            # Title 1.2
+                Paragraph under the title 1.2
+        # Title 2
+            Paragraph under the title 2
+            # Title 2.1
+                Paragraph under the title 2.1
+                
+    # Lorem ipsum  [type=summary]
+        Lorem ipsum dolor sit amet, !(http://google.fr)(Google) consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
+
+
+
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis erat urna, fringilla nec cursus et, gravida vitae magna. Suspendisse posuere ipsum non erat mattis, id placerat mi porttitor. Vestibulum interdum, est et scelerisque sodales, quam quam porttitor enim, vel pulvinar nunc quam sit amet justo. Ut egestas commodo nisi quis eleifend. Integer sed risus quis nisl lacinia tincidunt sollicitudin quis massa. Nunc venenatis elit dolor, nec ultricies diam condimentum ut. Nullam pretium lectus molestie nibh mollis, quis viverra elit malesuada.
+
+
+    # Unordered list items
+        [ul_item=1]
+        - Item 1
+            - Item 1.1      [ul_extra_item=1.1]
+            - Item 1.2
+        - Item 2
+            - Item 2.1
+            - Item 2.2
+                Text under item 2.2
+            - Item 2.3
+                - Item 2.3.1
+                Text under item 2.3.1
+                
+    # Ordered list items
+        1. Item 1
+            1. Item 1.1
+            1. Item 1.2
+        1. Item 2
+            1. Item 2.1
+            1. Item 2.2
+                Text under item 2.2
+            1. Item 2.3
+                1. Item 2.3.1
+                
+    <a href="http://google.fr">Go to Google</a>
+
+                
+    # Table
+        f(x) = 2x
+        | x | y |       [line=red]
+        | 0 | 0 |
+        | 1 | 2 |
+        | 2 | 4 |
+        Text under an array
+        
+        
+    # Link
+        !(https://github.com/cdtx/mino)(Fork me on GitHub)
+    
+    # Image
+        !!(http://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/200px-Tux.svg.png)(Tux)
+
+        
+    # Bloc of code
+        # Bash
+            ``` bash
+                cd /dev/project
+                grep -E "main\(.*\)" --include="*.c" .
+            ```
+        
+        # cpp
+            ``` cpp
+                #include <stdio.h>
+                
+                int main(int argc, char **argv) {
+                    printf("Hello world");
+                }
+            ```
+        
+        # Python
+            ``` python
+                def f():
+                    print 'fluflu'
+                    
+                if __name__ == '__main__':
+                    f()
+            ```
+    # Plugins
+        [type=summary]
+        # graphviz
+            _{ graphviz
+                digraph {
+                    bgcolor="transparent";
+                    A->B->C
+                }
+            }_
+
+            _{ graphviz
+                digraph G {
+                    rankdir="LR";
+                    bgcolor="transparent";
+                    node[width=0.15,height=0.15,shape=point];
+                    edge[weight=2,arrowhead=none];
+                    node[group=main];
+                    1 -> 2 -> 3 -> 4 -> 5;
+                    node[group=branch];
+                    2 -> 6;
+                    6 -> 10[style=dashed,label="+3"];
+                    10 -> 4;
+                }
+            }_
+
+
+
+        [type=summary]
+        # plantuml plugin
+            _{ plantuml
+                    class A 
+                    class B --|> class A
+                    class C --|> class B
+            }_
+
+        
+        # Python plugin
+            _{ python
+                print 'xx'
+                i = 42
+            }_
+
+            _{python
+                print i
+                print self
+                print dir(self)
+                self.append(mdTextLine(content='A plugin that adds text'))
+
+                l = mdUnorderedList(content='a')
+                l.merge(mdUnorderedList(content='b'))
+                l.append(mdUnorderedListItem(content='c'))
+                l.append(mdUnorderedListItem(content='d'))
+
+                self.append(l)
+            }_
+
+
+        # aafigure plugin
+            _{ aafigure
+                                  "R1"  
+                                 +----+   
+                         +-------+    +----+ 
+                    ^    |       +----+    |        ^
+                    |    |                +++       |
+                    |   -+-               | |       |
+                 "U"|                     | | "R2"  |"V = U (R2/R1+R2)"
+                    |   -+-               | |       |
+                         |                +++  
+                         |                 |
+                         +-----------------+
+            }_
+
+    # Summary
+        
+        [type=summary]
+        # Simple page
+            That chapter contains a very simple summary that fits on one slide
+
+        # Chapter I don't care
+            Content I don't care
+            - list
+            - I
+            - don't
+            - care
+
+        [type=summary]
+        # Second simple page
+            That chapter contains a very simple summary that fits on one slide
+
+            # Nested page
+                That I care
+
+        [type=summary]
+        # Complex slide set
+            
+            [type=summary]
+            # Here it's the first slide of the set
+                It contains content like :
+                    - a
+                    - b
+                    - c
+            [type=summary]
+            # And here is the second
+                It also contains stuffs such as :
+                    x*x
+                    | x | y |
+                    | 0 | 0 |
+                    | 1 | 1 |
+                    | 2 | 4 |
+                    | 3 | 9 |
+
+
+
