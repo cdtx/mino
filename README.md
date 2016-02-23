@@ -81,7 +81,7 @@ Example :
 -  Image
 Example :
 ```text
-!(https://i.ytimg.com/vi/oM1EVAYahFE/maxresdefault.jpg)(Visit me)
+!!(https://i.ytimg.com/vi/oM1EVAYahFE/maxresdefault.jpg)(Visit me)
 
 ```
 
