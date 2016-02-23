@@ -3,12 +3,19 @@ _This README.md is itself a demo, as it's generated automatically from mino ;-)_
 ## Intro
 _mino_ is a custom markdown syntax for writing documentation, notes, memos.
 -  It's purely text based, so:
+
   -  Doesn't requires heavy software for writing
+
   -  Allows managing revisions as usual with git or others tools.
+
 -  _mino_ is indentation based so documents can even be read from the text editor without formating
+
 -  It supports mixing python code and doc, so the document can be dynamically fed at runtime
+
 -  It supports various plugins
+
 -  It's independant from any output format. So one input can generate several outputs (complete pdf paper and summary slides for example)
+
 
 ### Why Mino ?
 Because _mino_ Is Not Office ;-)
@@ -17,6 +24,7 @@ Because _mino_ Is Not Office ;-)
 
 ### MINO Tags
 -  Document title
+
 Example :
 ```text
 My doc title
@@ -25,6 +33,7 @@ My doc title
 ```
 
 -  Chapter title
+
 The nested level is based on the element indentation
 ```text
 # Chaper title
@@ -32,8 +41,10 @@ The nested level is based on the element indentation
 ```
 
 -  Simple text
+
 As simple as it looks.
 -  Unordered list
+
 Example :
 ```text
 - one
@@ -43,6 +54,7 @@ Example :
 ```
 
 -  Ordered list
+
 The numbering has no actual impact
 ```text
 1. one
@@ -52,6 +64,7 @@ The numbering has no actual impact
 ```
 
 -  Table
+
 Example :
 ```text
 | x | y |
@@ -62,6 +75,7 @@ Example :
 ```
 
 -  Bloc of code
+
 Example :
 ```text
 ` ` ` the-language-name (cpp, python, javascript, text, ...)
@@ -72,6 +86,7 @@ Example :
 ```
 
 -  Link
+
 Example :
 ```text
 !(www.google.fr)(Visit Google)
@@ -79,6 +94,7 @@ Example :
 ```
 
 -  Image
+
 Example :
 ```text
 !!(https://i.ytimg.com/vi/oM1EVAYahFE/maxresdefault.jpg)(Visit me)
@@ -86,6 +102,7 @@ Example :
 ```
 
 -  Plugin invokation
+
 Example :
 ```text
 _{ python
@@ -109,7 +126,9 @@ Documentation coming soon...
 
 ### Output formats
 -  html
+
 -  Presentation slides, thanks to reveal.js
+
 
 ## Filtering
 Documentation coming soon...

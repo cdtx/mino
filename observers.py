@@ -240,7 +240,7 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
     def mdOrderedListItem(self, issuer, event):
         return '%s1. %s' % ('  '*self.nestedUnorderedListIndex, 
                             self.replaceInline(issuer.content)
-        ) + '\n'
+        ) + '\n\n'
     
     def mdUnorderedList(self, issuer, event):
         if event.endswith('start'):
@@ -252,7 +252,7 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
     def mdUnorderedListItem(self, issuer, event):
         return '%s- %s' % ('  '*self.nestedUnorderedListIndex,
                             self.replaceInline(issuer.content)
-        ) + '\n'
+        ) + '\n\n'
     def mdTable(self, issuer, event):
         # Assume (strong) all rows have the same number of elements
         # Return nothing but prepare the table sub-header
