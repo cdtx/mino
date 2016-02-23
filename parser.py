@@ -127,7 +127,10 @@ class mdElement:
                     self.childs[-1].spread(elem)
             
     def append(self, elem):
+        # Propagate the observers
+        elem.subject.observers = self.subject.observers[:]
         self.childs.append(elem)
+        
                         
     def _indent(self):
         return len(self.indent) / self.indentSize
@@ -465,6 +468,7 @@ class mdPlugin(mdElement):
     def run(self, plugin):
         if plugin:
             self.execute()
+        mdElement.run(self, plugin)
 
     def execute(self):
         self.output.truncate(0)
