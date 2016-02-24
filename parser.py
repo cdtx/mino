@@ -477,7 +477,9 @@ class mdPlugin(mdElement):
         # access to the whole context
         try:
             if self.pluginName.lower() == 'python':
-                exec(self.content, locals(), globals())
+                d = globals()
+                d.update(locals())
+                exec(self.content, d, d)
             else:
                 self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
                 self.plugin.run(self.content, self.output, globals(), locals())
