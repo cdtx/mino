@@ -127,7 +127,10 @@ class mdElement:
                     self.childs[-1].spread(elem)
             
     def append(self, elem):
+        # Propagate the observers
+        elem.subject.observers = self.subject.observers[:]
         self.childs.append(elem)
+        
                         
     def _indent(self):
         return len(self.indent) / self.indentSize
@@ -465,6 +468,7 @@ class mdPlugin(mdElement):
     def run(self, plugin):
         if plugin:
             self.execute()
+        mdElement.run(self, plugin)
 
     def execute(self):
         self.output.truncate(0)
@@ -473,7 +477,9 @@ class mdPlugin(mdElement):
         # access to the whole context
         try:
             if self.pluginName.lower() == 'python':
-                exec(self.content, locals(), globals())
+                d = globals()
+                d.update(locals())
+                exec(self.content, d, d)
             else:
                 self.plugin = imp.load_source('plugin_%s' % self.pluginName, os.path.dirname(os.path.realpath(__file__)) + '/plugins/%s/plugin.py' % self.pluginName)
                 self.plugin.run(self.content, self.output, globals(), locals())

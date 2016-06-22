@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, re
-from copy import copy
+from copy import deepcopy
 
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
 
-from pygments import highlight
+import pygments
+import pygments.styles
 from pygments.lexers import get_lexer_by_name 
 from pygments.formatters import HtmlFormatter
+
+from pdb import set_trace
 
 class mdFilter(object):
     def __init__(self, pattern, splitSymbol='/'):
@@ -113,19 +116,21 @@ class FactoryBasedFilterableObserver(filterableObserver):
             filterableObserver.update(self, issuer, event, message)
 
     def updateStart(self, issuer, event, message):
-        ''' update called on the start of an element, accepted by filter '''
+        ''' update called on the start of an element, accepted by filter, 
+        implementation can then choose to use the above factory'''
         pass
     def updateStop(self, issuer, event, message):
-        ''' update called on the stop of an element, accepted by filter '''
+        ''' update called on the start of an element, accepted by filter, 
+        implementation can then choose to use the above factory'''
         pass
 
     def functionFactory(self, issuer, event):
         if isinstance(issuer, parser.mdRootDoc):
-            return self.mdRootDoc(issuer)
+            return self.mdRootDoc(issuer, event)
         elif isinstance(issuer, parser.mdEmptyLine):
-            return self.mdEmptyLine(issuer)
+            return self.mdEmptyLine(issuer, event)
         elif isinstance(issuer, parser.mdDocumentTitle):
-            return self.mdDocumentTitle(issuer)
+            return self.mdDocumentTitle(issuer, event)
         elif isinstance(issuer, parser.mdTitle):
             if event == 'mino/doc/start':
                 self.titleLevel += 1
@@ -133,65 +138,65 @@ class FactoryBasedFilterableObserver(filterableObserver):
                 self.titleLevel -= 1
             return self.mdTitle(issuer, self.titleLevel)
         elif isinstance(issuer, parser.mdTextLine):
-            return self.mdTextLine(issuer)
+            return self.mdTextLine(issuer, event)
             
         elif isinstance(issuer, parser.mdOrderedList):
-            return self.mdOrderedList(issuer)
-        elif isinstance(issuer, parser.mdListItem):
-            return self.mdListItem(issuer)
+            return self.mdOrderedList(issuer, event)
+        elif isinstance(issuer, parser.mdOrderedListItem):
+            return self.mdOrderedListItem(issuer, event)
             
         elif isinstance(issuer, parser.mdUnorderedList):
-            return self.mdUnorderedList(issuer)
-        elif isinstance(issuer, parser.mdListItem):
-            return self.mdListItem(issuer)
+            return self.mdUnorderedList(issuer, event)
+        elif isinstance(issuer, parser.mdUnorderedListItem):
+            return self.mdUnorderedListItem(issuer, event)
             
         elif isinstance(issuer, parser.mdTable):
-            return self.mdTable(issuer)
+            return self.mdTable(issuer, event)
         elif isinstance(issuer, parser.mdTableLine):
-            return self.mdTableLine(issuer)
+            return self.mdTableLine(issuer, event)
         elif isinstance(issuer, parser.mdBlocOfCode):
-            return self.mdBlocOfCode(issuer)
+            return self.mdBlocOfCode(issuer, event)
         elif isinstance(issuer, parser.mdPlugin):
-            return self.mdPlugin(issuer)
+            return self.mdPlugin(issuer, event)
         elif isinstance(issuer, parser.mdImage):
-            return self.mdImage(issuer)
+            return self.mdImage(issuer, event)
         elif isinstance(issuer, parser.mdLink):
-            return self.mdLink(issuer)
+            return self.mdLink(issuer, event)
         else:
             raise Exception('Unknown element [%s]' % str(issuer))
 
 
-    def mdRootDoc(self, issuer):
+    def mdRootDoc(self, issuer, event):
         return ''
-    def mdEmptyLine(self, issuer):
+    def mdEmptyLine(self, issuer, event):
         return ''
     def mdTitle(self, issuer, level):
         return ''
-    def mdDocumentTitle(self, issuer):
+    def mdDocumentTitle(self, issuer, event):
         return ''
-    def mdTextLine(self, issuer):
+    def mdTextLine(self, issuer, event):
         return ''
-    def mdListItem(self, issuer):
+    def mdListItem(self, issuer, event):
         return ''
-    def mdOrderedList(self, issuer):
+    def mdOrderedList(self, issuer, event):
         return ''
-    def mdOrderedListItem(self, issuer):
+    def mdOrderedListItem(self, issuer, event):
         return ''
-    def mdUnorderedList(self, issuer):
+    def mdUnorderedList(self, issuer, event):
         return ''
-    def mdUnorderedListItem(self, issuer):
+    def mdUnorderedListItem(self, issuer, event):
         return ''
-    def mdTable(self, issuer):
+    def mdTable(self, issuer, event):
         return ''
-    def mdTableLine(self, issuer):
+    def mdTableLine(self, issuer, event):
         return ''
-    def mdBlocOfCode(self, issuer):
+    def mdBlocOfCode(self, issuer, event):
         return ''
-    def mdPlugin(self, issuer):
+    def mdPlugin(self, issuer, event):
         return ''
-    def mdLink(self, issuer):
+    def mdLink(self, issuer, event):
         return ''
-    def mdImage(self, issuer):
+    def mdImage(self, issuer, event):
         return ''
 
 class MarkdownObserver(FactoryBasedFilterableObserver):
@@ -200,6 +205,8 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         FactoryBasedFilterableObserver.__init__(self)
         self.str = ''
         self.prepareTable = None
+        self.nestedOrderedListIndex = -1
+        self.nestedUnorderedListIndex = -1
 
     def updateStart(self, issuer, event, message):
         res = self.functionFactory(issuer, event)
@@ -214,11 +221,11 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         if isinstance(res, tuple) or isinstance(res, list):
             self.str += res[1]
 
-    def mdEmptyLine(self, issuer):
+    def mdEmptyLine(self, issuer, event):
         return ''
     def mdTitle(self, issuer, level):
-        return '%s %s'% ('#'*level, self.replaceInline(issuer.content)) + '\n'
-    def mdDocumentTitle(self, issuer):
+        return '\n'+'%s %s'% ('#'*level, self.replaceInline(issuer.content)) + '\n'
+    def mdDocumentTitle(self, issuer, event):
         return ''
     def mdTextLine(self, issuer, event):
         return self.replaceInline(issuer.content) + '\n'
@@ -252,24 +259,24 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
         self.prepareTable = ' | '.join(['---'] * len(issuer.childs[0].elements))
         return ('', '\n')
 
-    def mdTableLine(self, issuer):
+    def mdTableLine(self, issuer, event):
         s = ' | '.join(issuer.elements) + '\n'
         if self.prepareTable:
             s += self.prepareTable + '\n'
             self.prepareTable = None
         return s
 
-    def mdBlocOfCode(self, issuer):
+    def mdBlocOfCode(self, issuer, event):
         return '\n'.join( [
                             "```%s" % issuer.lang,
                             issuer.text,
                             "```",
         ]) + '\n\n'
-    def mdPlugin(self, issuer):
+    def mdPlugin(self, issuer, event):
         return ''
-    def mdLink(self, issuer):
+    def mdLink(self, issuer, event):
         return '[%s](%s)\n' % (issuer.caption, issuer.url) + '\n'
-    def mdImage(self, issuer):
+    def mdImage(self, issuer, event):
         return '![%s](%s)\n' % (issuer.caption, issuer.url) + '\n'
 
     def replaceInline(self, content):
@@ -302,7 +309,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
         else:
             self.cssPath = r'%s/styles/{style}/style.css' % self.basePath
 
-    def mdRootDoc(self, issuer):
+    def mdRootDoc(self, issuer, event):
         before =    [   '<!doctype html>',
                         '<html>',
                         '    <!-- Not supported yet -->',
@@ -339,7 +346,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
                     ]
         return (before, after)
         
-    def mdEmptyLine(self, issuer):
+    def mdEmptyLine(self, issuer, event):
         return (['<br>'], [])
         
     def mdTitle(self, issuer, level):
@@ -353,7 +360,7 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
                     ]
         return (before, after)
         
-    def mdDocumentTitle(self, issuer):
+    def mdDocumentTitle(self, issuer, event):
         before =    [   '<div class="page-header">',
                         '<h1>%s</h1>' % self.htmlReplaceInline(issuer.title),
                         '</div>',
@@ -361,64 +368,64 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
         after = []
         return (before, after)
         
-    def mdTextLine(self, issuer):
+    def mdTextLine(self, issuer, event):
         before =    [   '<p %s>' % self.extraParams(issuer),
                         '    %s' % (self.htmlReplaceInline(issuer.text) if issuer.inline else issuer.text)
                     ]
         after =     ['</p>']
         return (before, after)
     
-    def mdListItem(self, issuer):
+    def mdListItem(self, issuer, event):
         before =    ['<li %s>' % self.extraParams(issuer),
                      '    %s' % (self.htmlReplaceInline(issuer.text))]
         after =     ['</li>']
         return (before, after)
         
-    def mdOrderedList(self, issuer):
+    def mdOrderedList(self, issuer, event):
         before =    ['<ol %s>' % self.extraParams(issuer)]
         after =     ['</ol>']
         return (before, after)
-    def mdOrderedListItem(self, issuer):
-        return self.mdListItem(issuer)
+    def mdOrderedListItem(self, issuer, event):
+        return self.mdListItem(issuer, event)
         
-    def mdUnorderedList(self, issuer):
+    def mdUnorderedList(self, issuer, event):
         before =    ['<ul %s>' % self.extraParams(issuer) ]
         after =     ['</ul>']
         return (before, after)        
-    def mdUnorderedListItem(self, issuer):
-        return self.mdListItem(issuer)
+    def mdUnorderedListItem(self, issuer, event):
+        return self.mdListItem(issuer, event)
         
-    def mdTable(self, issuer):
+    def mdTable(self, issuer, event):
         before =    ['<table %s>' % self.extraParams(issuer)]
         after =     ['</table>']
         return (before, after)
     
-    def mdTableLine(self, issuer):
+    def mdTableLine(self, issuer, event):
         before =    ['<tr %s>' % self.extraParams(issuer)]
         for c in issuer.elements:
             before.append('    <td> %s </td>' % self.htmlReplaceInline(c.strip()))
         after =     ['</tr>']
         return (before, after)
     
-    def mdBlocOfCode(self, issuer):
+    def mdBlocOfCode(self, issuer, event):
         # See for using http://prismjs.com/index.html
         res = ([str(highlight(issuer.text, get_lexer_by_name(issuer.lang), HtmlFormatter(noclasses=True)))], [])
         return res
     
-    def mdPlugin(self, issuer):
+    def mdPlugin(self, issuer, event):
         before =    [   '<div %s>' % self.extraParams(issuer),
                     ]
         after =    ['</div>']
         return (before, after)
     
-    def mdLink(self, issuer):
+    def mdLink(self, issuer, event):
         before =    [   '<p %s>' % (self.extraParams(issuer)),  
                         '    <a href="%s">%s</a>' % (issuer.url, self.htmlReplaceInline(issuer.caption)),
                     ]
         after =     [   '</p>']
         return (before, after)
     
-    def mdImage(self, issuer):
+    def mdImage(self, issuer, event):
         before =    [   '<figure>', 
                         '   <img src="%s" alt="missing" %s/>' % (issuer.url, self.extraParams(issuer)),
                         '   <figcaption>%s</figcaption>' % self.htmlReplaceInline(issuer.caption),
@@ -478,7 +485,7 @@ class SlidesObserver(HtmlDocObserver):
         else:
             self.revealPath = r'https://rawgit.com/hakimel/reveal.js/3.0.0'
 
-    def mdRootDoc(self, issuer):
+    def mdRootDoc(self, issuer, event):
         before = [
             '''<!doctype html>''',
             '''<html lang="en">''',
@@ -558,6 +565,31 @@ class SlidesObserver(HtmlDocObserver):
                 self.slidesList[-1][1].append(issuer)
             else:
                 print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
+        elif (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary'):
+            candidate = deepcopy(issuer)
+            candidate.childs = []
+            if self.slidesInProgress == 0:
+                self.slidesList.append([candidate, []])
+            elif self.slidesInProgress == 1:
+                self.slidesList[-1][1].append(candidate)
+            else :
+                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
+=======
+                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
+        elif (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary'):
+            candidate = deepcopy(issuer)
+            candidate.childs = []
+            if self.slidesInProgress == 0:
+                self.slidesList.append([candidate, []])
+            elif self.slidesInProgress == 1:
+                self.slidesList[-1][1].append(candidate)
+            else :
+                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
+>>>>>>> Temporary merge branch 2
                 
     def updateStop(self, issuer, event, message):
         if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
