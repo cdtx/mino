@@ -292,7 +292,7 @@ class MarkdownObserver(FactoryBasedFilterableObserver):
                 content = re.sub(pat, repl[type], content, flags=opt)
         return content
 
-class HtmlDocObserver(FactoryBasedFilterableObserver):
+class HtmlObserver(FactoryBasedFilterableObserver):
     def __init__(self, localRessources=False):
         FactoryBasedFilterableObserver.__init__(self)
         self.indent = 0
@@ -422,68 +422,47 @@ class HtmlDocObserver(FactoryBasedFilterableObserver):
             if type in repl.keys():
                 content = re.sub(pat, repl[type], content, flags=opt)
         return content
+
+class HtmlDocObserver(HtmlObserver):
+    pass
             
 
-class SlidesObserver(HtmlDocObserver):
+class HtmlRevealObserver(HtmlObserver):
     '''
     Using reveal.js, slides generation becomes a special case of html generation
-    Except the header that changes
     '''
     def __init__(self, localRessources=False):
-        HtmlDocObserver.__init__(self, localRessources)
-        self.slidesList = [] 
+        HtmlObserver.__init__(self, localRessources)
         self.slidesInProgress = 0
 
-    def updateStart(self, issuer, event, message):
-        if ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or
-             (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') ):
+    def isSlide(self, issuer):
+        return ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') )
 
-            if self.slidesInProgress == 0:
-                self.slidesInProgress = 1
-                self.slidesList.append([issuer, []])
-            elif self.slidesInProgress == 1:
-                self.slidesList[-1][1].append(issuer)
+
+    def updateStart(self, issuer, event, message):
+        if self.isSlide(issuer):
+            if self.slidesInProgress in [0, 1]:
+                self.slidesInProgress += 1
+                self.htmlAppend(['<section>'])
+            else:
+                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+
+        HtmlObserver.updateStart(self, issuer, event, message)
+
+
+    def updateStop(self, issuer, event, message):
+        HtmlObserver.updateStop(self, issuer, event, message)
+
+        if self.isSlide(issuer):
+            if self.slidesInProgress in [1, 2]:
+                self.slidesInProgress -= 1
+                self.htmlAppend(['</section>'])
             else:
                 print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
 
 
-    def updateStop(self, issuer, event, message):
-        if self.slidesInProgress == 1 and issuer == self.slidesList[-1][0]:
-            self.slidesInProgress = 0
-
-    def toFile(self, fileName):
-        self.createHtml()
-        HtmlDocObserver.toFile(self, fileName)
-
-    def createHtml(self):
-        self.htmlAppend(self.mdRootDoc(None, 'mino/doc/start')[0])
-
-        for slide in self.slidesList:
-            if slide[1] == []:
-                # There is no subslide, so create only one <section> level
-                self.htmlAppend(['<section>'])
-                self.recursiveDoc(slide[0])
-                self.htmlAppend(['</section>'])
-            else:
-                # The root element is only used for delimiting the section
-                self.htmlAppend(['<section>'])
-                
-                for sub in slide[1]:
-                    self.htmlAppend(['<section>'])
-                    self.recursiveDoc(sub)
-                    self.htmlAppend(['</section>'])
-
-                self.htmlAppend(['</section>'])
-        
-        self.htmlAppend(self.mdRootDoc(None, 'mino/doc/start')[1])
-
-    def recursiveDoc(self, elem):
-        self.htmlAppend(self.functionFactory(elem, 'mino/doc/start')[0])
-        for sub in elem.childs:
-            self.recursiveDoc(sub)
-        self.htmlAppend(self.functionFactory(elem, 'mino/doc/stop')[1])
-
-
+class SlidesObserver(HtmlRevealObserver):
+    pass
 
 
 
