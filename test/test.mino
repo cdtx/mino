@@ -8,7 +8,7 @@ MINO documentation
 # Paragraph 2
     Etiam venenatis tempor sem, id vestibulum diam lobortis sit amet. Vestibulum a libero et metus efficitur consequat id ultrices nisl. Cras quis turpis nec augue pharetra tincidunt. Etiam vel velit velit. Pellentesque in dapibus turpis, ac hendrerit magna. Duis odio nisi, sodales sit amet magna nec, suscipit commodo lorem. Morbi iaculis, sapien posuere posuere ornare, risus lacus pretium urna, faucibus tempus est urna nec neque.
 
-    [type=summary]
+    [class=slide]
     Here is the list :
         - a
             Cool !
@@ -16,29 +16,29 @@ MINO documentation
         - c
 
     # Summary
-        [type=summary]
+        [class=slide]
         !(http://google.com)(Google)
 
-        [type=summary]
+        [class=slide]
         Part two
 
-        [type=summary]
+        [class=slide]
         Part three
 
 # Paragraph 3
     Nunc blandit odio sapien, quis venenatis sem tempor sit amet. Curabitur fermentum arcu eget est tempor pulvinar. Suspendisse non finibus mi, nec imperdiet arcu. Curabitur ut condimentum ipsum. Nullam ac dolor id leo rutrum lobortis. In ultrices maximus neque, sit amet tincidunt ligula consequat ut. Fusce pellentesque velit a malesuada ultricies. Praesent et sodales purus. Nunc vitae rhoncus sapien, nec auctor turpis. Pellentesque mi est, ornare a congue quis, egestas sed purus. Morbi euismod finibus tincidunt. Integer ac ex tristique, imperdiet mi vitae, pulvinar eros. Suspendisse faucibus augue nec sodales auctor.
 
-    [type=summary]
+    [class=slide]
     Summary
 
 # Paragraph 4
     Aliquam quis dolor sit amet dolor vestibulum pellentesque. Nulla orci augue, euismod non justo ac, iaculis bibendum lorem. Vestibulum viverra neque at faucibus viverra. Integer mattis nec leo ut posuere. Vivamus vulputate, ex ut posuere condimentum, sem enim volutpat purus, eu faucibus leo dui nec sapien. Curabitur ac magna tempor, mattis lectus eu, pretium turpis. Curabitur nec magna at risus pulvinar fermentum. Vivamus aliquam nisl vitae nisl faucibus porta. Cras risus libero, lacinia quis consectetur ac, accumsan ac erat. Nulla arcu turpis, sodales eu pretium a, rutrum a urna. Sed felis felis, rhoncus vel sagittis in, porttitor id mauris.
 
-    [type=summary]
+    [class=slide]
     Summary
 
 # Paragraph 5
     Praesent sit amet consectetur risus, ac accumsan nulla. Morbi ullamcorper, felis vel mollis porta, odio erat aliquet ipsum, vitae mattis urna quam ut eros. Cras congue viverra nisl, at aliquam magna placerat sed. Donec vehicula, est et sodales condimentum, metus metus scelerisque libero, eget tempor justo nisl ac lectus. Sed vestibulum tincidunt turpis, id mattis mauris mattis sed. Suspendisse potenti. Sed porttitor volutpat turpis nec efficitur. Mauris dictum efficitur lectus id fringilla. Quisque malesuada molestie consectetur. Sed accumsan id orci quis varius. In aliquam condimentum justo, sed posuere neque pharetra id. Pellentesque aliquet at tellus quis ultrices. Maecenas at diam nisi. Pellentesque id tellus molestie, mattis tellus quis, accumsan lorem. In auctor mi sit amet arcu fringilla, at ullamcorper sapien elementum. Cras non ligula neque. 
 
-    [type=summary]
+    [class=slide]
     Summary

@@ -105,6 +105,13 @@ MINO texting language
     # Output formats
         - html
         - Presentation slides, thanks to reveal.js
+            Horizontal slides are supported.
+            To create slide, just add the following above a block :
+            ``` text
+                [class=slide]
+            ```
+
+            And use the **HtmlRevealObserver**
 
 # Filtering
     Documentation coming soon...

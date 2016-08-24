@@ -5,9 +5,7 @@ _mino_ is a custom markdown syntax for writing documentation, notes, memos.
 -  It's purely text based, so:
   -  Doesn't requires heavy software for writing
   -  Allows managing revisions as usual with git or others tools.
-
 -  _mino_ is indentation based so documents can even be read from the text editor without formating
-
 -  It supports mixing python code and doc, so the document can be dynamically fed at runtime
 -  It supports various plugins
 -  It's independant from any output format. So one input can generate several outputs (complete pdf paper and summary slides for example)
@@ -107,10 +105,18 @@ Documentation coming soon...
 ## Observability
 Documentation coming soon...
 
+### Observability
+
 ### Output formats
 -  html
-
 -  Presentation slides, thanks to reveal.js
+Horizontal slides are supported.
+```text
+[class=slide]
+
+```
+
+And use the **HtmlRevealObserver**
 
 ## Filtering
 Documentation coming soon...
@@ -122,14 +128,4 @@ Documentation coming soon...
  Reveal.js  |  slide presentation output 
  plantuml python package  |  plantuml plugin 
  pydot2 python package, and graphviz installed  |  for graphviz plugin 
- weasyprint python package  |  pdf output 
 
-<<<<<<< Temporary merge branch 1
-- weasyprint (for pdf output)
-- pygments (for source syntax coloring)
-- Reveal.js
-- plantuml python package (for plantuml plugin)
-- pydot2 python package, and graphviz installed (for graphviz plugin)
-- aafigure for ascii art drawing
-=======
->>>>>>> Temporary merge branch 2

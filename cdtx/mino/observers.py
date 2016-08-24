@@ -435,10 +435,10 @@ class HtmlRevealObserver(HtmlObserver):
         self.slidesInProgress = 0
 
     def isSlide(self, issuer):
-        return (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') or self.isGroupSlide(issuer)
+        return (issuer.extraParams and issuer.extraParams.all.get('class') == 'slide') or self.isGroupSlide(issuer)
 
     def isGroupSlide(self, issuer):
-        return (issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary')
+        return (issuer.groupExtraParams and issuer.groupExtraParams.all.get('class') == 'slide')
 
     def updateStart(self, issuer, event, message):
         if self.isSlide(issuer):
