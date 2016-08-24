@@ -435,16 +435,18 @@ class HtmlRevealObserver(HtmlObserver):
         self.slidesInProgress = 0
 
     def isSlide(self, issuer):
-        return ((issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary') or (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') )
+        return (issuer.extraParams and issuer.extraParams.all.get('type') == 'summary') or self.isGroupSlide(issuer)
 
+    def isGroupSlide(self, issuer):
+        return (issuer.groupExtraParams and issuer.groupExtraParams.all.get('type') == 'summary')
 
     def updateStart(self, issuer, event, message):
         if self.isSlide(issuer):
-            if self.slidesInProgress in [0, 1]:
+            if self.slidesInProgress in [0]:
                 self.slidesInProgress += 1
                 self.htmlAppend(['<section>'])
             else:
-                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+                print '[SlidesObserver] Warning, cannot manage more than 1 levels of slides'
 
         if self.slidesInProgress > 0:
             HtmlObserver.updateStart(self, issuer, event, message)
@@ -455,11 +457,11 @@ class HtmlRevealObserver(HtmlObserver):
             HtmlObserver.updateStop(self, issuer, event, message)
 
         if self.isSlide(issuer):
-            if self.slidesInProgress in [1, 2]:
+            if self.slidesInProgress in [1]:
                 self.slidesInProgress -= 1
                 self.htmlAppend(['</section>'])
             else:
-                print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
+                print '[SlidesObserver] Warning, cannot manage more than 1 levels of slides'
 
 
 class SlidesObserver(HtmlRevealObserver):

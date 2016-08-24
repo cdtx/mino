@@ -9,7 +9,21 @@ MINO documentation
     Etiam venenatis tempor sem, id vestibulum diam lobortis sit amet. Vestibulum a libero et metus efficitur consequat id ultrices nisl. Cras quis turpis nec augue pharetra tincidunt. Etiam vel velit velit. Pellentesque in dapibus turpis, ac hendrerit magna. Duis odio nisi, sodales sit amet magna nec, suscipit commodo lorem. Morbi iaculis, sapien posuere posuere ornare, risus lacus pretium urna, faucibus tempus est urna nec neque.
 
     [type=summary]
-    Summary
+    Here is the list :
+        - a
+            Cool !
+        - b
+        - c
+
+    # Summary
+        [type=summary]
+        !(http://google.com)(Google)
+
+        [type=summary]
+        Part two
+
+        [type=summary]
+        Part three
 
 # Paragraph 3
     Nunc blandit odio sapien, quis venenatis sem tempor sit amet. Curabitur fermentum arcu eget est tempor pulvinar. Suspendisse non finibus mi, nec imperdiet arcu. Curabitur ut condimentum ipsum. Nullam ac dolor id leo rutrum lobortis. In ultrices maximus neque, sit amet tincidunt ligula consequat ut. Fusce pellentesque velit a malesuada ultricies. Praesent et sodales purus. Nunc vitae rhoncus sapien, nec auctor turpis. Pellentesque mi est, ornare a congue quis, egestas sed purus. Morbi euismod finibus tincidunt. Integer ac ex tristique, imperdiet mi vitae, pulvinar eros. Suspendisse faucibus augue nec sodales auctor.
