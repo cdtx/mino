@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, re
-from copy import deepcopy
 
 from cdtx.mino import parser
 from cdtx.mino.parser import inlinePatterns
@@ -447,11 +446,13 @@ class HtmlRevealObserver(HtmlObserver):
             else:
                 print '[SlidesObserver] Warning, cannot manage more than 2 levels of slides'
 
-        HtmlObserver.updateStart(self, issuer, event, message)
+        if self.slidesInProgress > 0:
+            HtmlObserver.updateStart(self, issuer, event, message)
 
 
     def updateStop(self, issuer, event, message):
-        HtmlObserver.updateStop(self, issuer, event, message)
+        if self.slidesInProgress > 0:
+            HtmlObserver.updateStop(self, issuer, event, message)
 
         if self.isSlide(issuer):
             if self.slidesInProgress in [1, 2]:
