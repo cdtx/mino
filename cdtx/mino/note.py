@@ -233,7 +233,8 @@ def call_search(mgr, args):
     if args.edit != None:
         matching[args.edit].edit()
     if args.view != None:
-        matching[int(args.view[0])].createHTML(args.view[1], openAfter=True)
+        note = matching[int(args.view[0])]
+        note.createHTML(os.path.join('/tmp', os.path.splitext(os.path.basename(note.filePath))[0]+'.html'), openAfter=True)
     if args.export != None:
         matching[int(args.export[0])].createHTML(args.export[1], openAfter=False)
 
@@ -289,7 +290,7 @@ if __name__ == '__main__':
     parser_search.add_argument('--remote',  help='Specify a unique remote to work with (default all)')
     parser_search.add_argument('words', type=str, nargs='*', help='The words to look for, can be empty for listing the whole notes')
     parser_search.add_argument('--edit', type=int, const=0, nargs='?', help='Open the first or specified note in the default text editor')
-    parser_search.add_argument('--view', nargs=2, help='Open the specified note in the default webbrowser')
+    parser_search.add_argument('--view', nargs=1, help='Open the specified note in the default webbrowser')
     parser_search.add_argument('--export', nargs=2, help='Creates a single html file for this note')
     parser_search.set_defaults(func=call_search)
 
