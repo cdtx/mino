@@ -10,6 +10,7 @@ setup(
         'Topic :: Text Editors',
     ],
     packages=['cdtx.mino'],
+    namespace_packages = ['cdtx'],
 )
 
 
